@@ -1,32 +1,18 @@
-		ORG 0x7c00
-		JMP SHORT	START
-		NOP
-		
-%include	"inc/fat16head.inc"
+%include	"inc/loader.inc"
+ORG	0H
+JMP	RAELMODEBEGIN
 
-
-START:
-	MOV	AX,0600H
-	MOV	BH,07
-	MOV	CX,0000
-	MOV	DX,184FH
-	INT	10H
+;由JMP跳入，16位段，设置好GDT及IDT后跳入保护模式
+[SECTION .CODE16]
+[BITS 16]
+RAELMODEBEGIN:
 	MOV	AX,CS
-	MOV	ES,AX
-	MOV	SS,AX
 	MOV	DS,AX
-	MOV	SP,TopOfStack
+	MOV	AX,TopOfStack
+	MOV	SP,AX
 
-	;输出BOOTINT
-	MOV	BP,MESSAGE1
-	MOV	AX,0X1301
-	MOV	BX,0007H
-	MOV	DX,0H
-	MOV	CX,7	;STRING SIZE
-	INT 	10H
-	
-	;JMP	NOLOADER
 
+;加载内核KERNAL.BIN
 NEXTREAD:
 	MOV	BX,[RootSectionStart]
 	MOV	CL,1
@@ -94,38 +80,37 @@ NEXTFATREAD:
 	ADD	WORD [PhyAddrSeg],20H
 	JMP	NEXTFATREAD
 READEND:
-	MOV	DX,0100H
+	MOV	DX,0200H
 	MOV	CL,02H
 	MOV	SI,MESSAGE4
 	CALL	DISPLAYSTR
 
-	JMP		1000H:0
-
-	JMP	$
+	JMP	JUMPTOPROTECTEDMODE
 
 RootSectionStart	DW	47
 RootSectionCnt	DW	7
-
-RootDirSeg	EQU	07F0H	;加载根目录段地址
+				;			0H~7C00H	作系统堆栈
+RootDirSeg	EQU	07F0H	;加载根目录段地址	7CF0H~8D00H	7扇区
 RootDirOffset	EQU	0	;加载根目录偏移
 
-PhyAddrSeg	DW	1000H	;加载Loader内存段地址
-PhyAddrOffset	DW	0	;加载Loader内存偏移
+PhyAddrSeg	DW	2000H	;加载KERNAL内存段地址
+PhyAddrOffset	DW	0	;加载KERNAL内存偏移
 
-FATItemSeg	EQU	08F0H	;加载FAT表段地址
+FATItemSeg	EQU	08D0H	;加载FAT表段地址	8D00H~BB00h	23扇区
 FATItemOffset	EQU	0	;加载FAT表偏移
-
+				;			BB00H~10000H	共17K
 NH		EQU	2	;磁头数
 NS		EQU	36	;每道扇区数
 DATABEGIN	EQU	52	;加上簇数便是数据扇区
 
 TopOfStack	EQU	7C00H
 
-INFOLOADER	DB	'LOADER  BIN'	;要加载的BIN文件，共11位，文件名8位，后缀3位
-MESSAGE1	DB	'Booting'
+INFOLOADER	DB	'KERNAL  BIN'
 
-MESSAGE3	DB	'No loader',0
-MESSAGE4	DB	'Load successfully',0
+MESSAGE3	DB	'NO KERNAL!',0
+MESSAGE4	DB	'LOAD KERNAL SUCCESSFULLY',0
+
+;调用
 
 ;----------------------------------------------------------------------------
 ;Find Next Fat Item 
@@ -157,7 +142,7 @@ GetNextFAT:
 
 
 ;---------------------------------------------------------------------
-;Read Sections   读一个扇区
+;Read Sections
 ;---------------------------------------------------------------------
 ;BX	LBA
 ;CL	Section Count
@@ -207,7 +192,7 @@ GoReading:
 ;ds:si指向字符串首地址。
 
 DISPLAYSTR:	      
-	PUSH AX      
+	PUSH AX       
 	PUSH BX
 	PUSH DI
 	MOV BX,0B800H
@@ -235,5 +220,105 @@ NO7CRET:
         POP AX
 	RET
 
-TIMES	510-($-$$)	DB	0
-			DW	0xAA55
+;此处跳入保护模式，不开启分页
+JUMPTOPROTECTEDMODE:
+	LGDT	[GDTREG]
+	CLI
+	IN	AL,92H
+	OR	AL,00000010B
+	OUT	92H,AL
+	MOV	EAX,CR0
+	OR	EAX,1
+	MOV	CR0,EAX
+	JMP	DWORD	SELECTOR_CODE32:(PROTECTED_BEGIN+LOADERADDR)
+
+
+
+[SECTION .gdt]
+;GDT
+;				段基址		段界限	段属性
+GDT:		Descriptor	0,		0,	0
+GDT_DATA:	Descriptor	0,		0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
+GDT_STACK:	Descriptor	0,		0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
+GDT_CODE32:	Descriptor	0,		0FFFFFH,DA_CCOR|DA_DPL0|DA_32|DA_LIMIT_4K
+GDT_VEDIO:	Descriptor	0B8000H,	0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
+
+GDTLEN	EQU	$-GDT
+GDTREG	DW	GDTLEN-1	;加载GDTR时的变量地址;段界限
+	DD	LOADERADDR+GDT		;段基址
+
+;选择子
+SELECTOR_DATA	EQU	GDT_DATA-GDT
+SELECTOR_STACK	EQU	GDT_STACK-GDT
+SELECTOR_CODE32	EQU	GDT_CODE32-GDT
+SELECTOR_VEDIO	EQU	GDT_VEDIO-GDT
+
+[SECTION .DATA]
+ALIGN	32
+_MESSAGE_PROTECTEDDMODE	DB	'WELCOME TO PROTECTED MODE!!!',0
+
+
+
+;保护模式中使用一下标志
+MESSAGE_PROTECTEDDMODE	EQU	_MESSAGE_PROTECTEDDMODE+LOADERADDR
+
+[SECTION STACK]
+STACKSPACE:
+TIMES	1024	DB	0	;栈空间初定为1K
+TOPOFSTACK	EQU	$+LOADERADDR
+
+[SECTION .CODE32]
+ALIGN	32
+[BITS	32]
+PROTECTED_BEGIN:
+	MOV	AX,SELECTOR_DATA
+	MOV	DS,AX
+	MOV	AX,SELECTOR_STACK
+	MOV	SS,AX
+	MOV	AX,SELECTOR_VEDIO
+	MOV	FS,AX
+	MOV	SP,TOPOFSTACK
+
+	MOV	DX,0H
+	MOV	CL,02H
+	MOV	ESI,MESSAGE_PROTECTEDDMODE
+	CALL	DISPLAYSTR32
+
+	JMP	SELECTOT_CODE32:20000H
+
+[SECTION .CODE32_CALL]		;32位下的调用
+ALIGN	32
+[BITS	32]
+;功能为显示一个用0结束的字符串
+;参数：
+;(dh)=行号
+;(dl)=列号
+;(cl)=颜色
+;ds:si指向字符串首地址。
+
+DISPLAYSTR32:	      
+	PUSH EAX       
+	PUSH EBX
+	PUSH EDI
+	MOV AL,160D
+	MUL DH
+	MOV DI,AX
+	MOV AL,2        
+	MUL DL          
+	ADD DI,AX
+	MOV BL,CL
+AGAIN32:	
+	MOV CX,[ESI]
+	MOV CH,0
+	JCXZ NO7CRET32
+	MOV [FS:DI],CL
+	MOV [FS:DI+1],BL
+	INC ESI
+	ADD DI,2
+	JMP SHORT AGAIN32
+	
+NO7CRET32:        
+	POP EDI
+        POP EBX
+        POP EAX
+	RET

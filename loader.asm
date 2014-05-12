@@ -2,7 +2,7 @@
 ORG	0H
 JMP	RAELMODEBEGIN
 
-;��JMP���룬16λ�Σ����ú�GDT��IDT�����뱣��ģʽ
+;由JMP跳入，16位段，设置好GDT及IDT后跳入保护模式
 [SECTION .CODE16]
 [BITS 16]
 RAELMODEBEGIN:
@@ -12,14 +12,14 @@ RAELMODEBEGIN:
 	MOV	SP,AX
 
 
-;�����ں�KERNAL.BIN
+;加载内核KERNAL.BIN
 NEXTREAD:
 	MOV	BX,[RootSectionStart]
 	MOV	CL,1
 	MOV	AX,RootDirSeg
 	MOV	ES,AX
 	MOV	DI,RootDirOffset
-	CALL	ReadSection	;��һ������
+	CALL	ReadSection	;读一个扇区
 
 	MOV	DX,10H		;COMPARE MAX TIMES
 	CLD
@@ -44,10 +44,10 @@ NEXTITEM:
 	
 
 NEXTSECTION:
-	ADD	WORD	[RootSectionStart],1	;��һ������
-	SUB	WORD	[RootSectionCnt],1	;������¼
+	ADD	WORD	[RootSectionStart],1	;下一个扇区
+	SUB	WORD	[RootSectionCnt],1	;扇区记录
 	CMP	WORD	[RootSectionCnt],0
-	JZ	NOLOADER		;�Ҳ���LOADER
+	JZ	NOLOADER		;找不到LOADER
 	JMP	NEXTREAD
 
 
@@ -63,7 +63,7 @@ FOUND:
 	ADD	DI,WORD 1AH
 	MOV	BX,[ES:DI]	
 NEXTFATREAD:
-	MOV	AX,BX		;AX��¼FAT��ָ����һ��
+	MOV	AX,BX		;AX记录FAT项指向下一簇
 	ADD	BX,DATABEGIN
 	MOV	CL,1
 	MOV	DX,[PhyAddrSeg]
@@ -89,19 +89,19 @@ READEND:
 
 RootSectionStart	DW	47
 RootSectionCnt	DW	7
+				;			0H~7C00H	作系统堆栈
+RootDirSeg	EQU	07F0H	;加载根目录段地址	7CF0H~8D00H	7扇区
+RootDirOffset	EQU	0	;加载根目录偏移
 
-RootDirSeg	EQU	07F0H	;���ظ�Ŀ¼�ε�ַ
-RootDirOffset	EQU	0	;���ظ�Ŀ¼ƫ��
+PhyAddrSeg	DW	2000H	;加载KERNAL内存段地址
+PhyAddrOffset	DW	0	;加载KERNAL内存偏移
 
-PhyAddrSeg	DW	2000H	;����Loader�ڴ�ε�ַ
-PhyAddrOffset	DW	0	;����Loader�ڴ�ƫ��
-
-FATItemSeg	EQU	08F0H	;����FAT���ε�ַ
-FATItemOffset	EQU	0	;����FAT��ƫ��
-
-NH		EQU	2	;��ͷ��
-NS		EQU	36	;ÿ��������
-DATABEGIN	EQU	52	;���ϴ���������������
+FATItemSeg	EQU	08D0H	;加载FAT表段地址	8D00H~BB00h	23扇区
+FATItemOffset	EQU	0	;加载FAT表偏移
+				;			BB00H~10000H	共17K
+NH		EQU	2	;磁头数
+NS		EQU	36	;每道扇区数
+DATABEGIN	EQU	52	;加上簇数便是数据扇区
 
 TopOfStack	EQU	7C00H
 
@@ -110,7 +110,7 @@ INFOLOADER	DB	'KERNAL  BIN'
 MESSAGE3	DB	'NO KERNAL!',0
 MESSAGE4	DB	'LOAD KERNAL SUCCESSFULLY',0
 
-;����
+;调用
 
 ;----------------------------------------------------------------------------
 ;Find Next Fat Item 
@@ -174,7 +174,7 @@ GoReading:
 	MOV	AL,CL	;Section Count
 	MOV	CL,AH	;S
 	MOV	AH,02H
-	MOV	DL,00H		;��һ������
+	MOV	DL,00H		;第一个软盘
 	MOV	BX,DI
 	INT	13H
 	JC	GoReading
@@ -184,12 +184,12 @@ GoReading:
 	RET
 
 
-;����Ϊ��ʾһ����0�������ַ���
-;������
-;(dh)=�к�
-;(dl)=�к�
-;(cl)=��ɫ
-;ds:siָ���ַ����׵�ַ��
+;功能为显示一个用0结束的字符串
+;参数：
+;(dh)=行号
+;(dl)=列号
+;(cl)=颜色
+;ds:si指向字符串首地址。
 
 DISPLAYSTR:	      
 	PUSH AX       
@@ -220,7 +220,7 @@ NO7CRET:
         POP AX
 	RET
 
-;�˴����뱣��ģʽ����������ҳ
+;此处跳入保护模式，不开启分页
 JUMPTOPROTECTEDMODE:
 	LGDT	[GDTREG]
 	CLI
@@ -230,24 +230,24 @@ JUMPTOPROTECTEDMODE:
 	MOV	EAX,CR0
 	OR	EAX,1
 	MOV	CR0,EAX
-	JMP	DWORD	SELECTOR_CODE32:(LOADERADDR+PROTECTED_BEGIN)
+	JMP	DWORD	SELECTOR_CODE32:(PROTECTED_BEGIN+LOADERADDR)
 
 
 
 [SECTION .gdt]
 ;GDT
-;				�λ�ַ		�ν���	������
+;				段基址		段界限	段属性
 GDT:		Descriptor	0,		0,	0
 GDT_DATA:	Descriptor	0,		0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
 GDT_STACK:	Descriptor	0,		0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
 GDT_CODE32:	Descriptor	0,		0FFFFFH,DA_CCOR|DA_DPL0|DA_32|DA_LIMIT_4K
-GDT_VEDIO:	Descriptor	0B8000H,		0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
+GDT_VEDIO:	Descriptor	0B8000H,	0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
 
 GDTLEN	EQU	$-GDT
-GDTREG	DW	GDTLEN-1	;����GDTRʱ�ı�����ַ;�ν���
-	DD	LOADERADDR+GDT		;�λ�ַ
+GDTREG	DW	GDTLEN-1	;加载GDTR时的变量地址;段界限
+	DD	LOADERADDR+GDT		;段基址
 
-;ѡ����
+;选择子
 SELECTOR_DATA	EQU	GDT_DATA-GDT
 SELECTOR_STACK	EQU	GDT_STACK-GDT
 SELECTOR_CODE32	EQU	GDT_CODE32-GDT
@@ -259,12 +259,12 @@ _MESSAGE_PROTECTEDDMODE	DB	'WELCOME TO PROTECTED MODE!!!',0
 
 
 
-;����ģʽ��ʹ��һ�±�־
+;保护模式中使用一下标志
 MESSAGE_PROTECTEDDMODE	EQU	_MESSAGE_PROTECTEDDMODE+LOADERADDR
 
 [SECTION STACK]
 STACKSPACE:
-TIMES	1024	DB	0	;ջ�ռ����Ϊ1K
+TIMES	1024	DB	0	;栈空间初定为1K
 TOPOFSTACK	EQU	$+LOADERADDR
 
 [SECTION .CODE32]
@@ -281,27 +281,25 @@ PROTECTED_BEGIN:
 
 	MOV	DX,0H
 	MOV	CL,02H
-	MOV	SI,MESSAGE_PROTECTEDDMODE
+	MOV	ESI,MESSAGE_PROTECTEDDMODE
 	CALL	DISPLAYSTR32
 
-	JMP	$
+	JMP	SELECTOR_CODE32:20000H
 
-[SECTION .CODE32_CALL]		;32λ�µĵ���
+[SECTION .CODE32_CALL]		;32位下的调用
 ALIGN	32
 [BITS	32]
-;����Ϊ��ʾһ����0�������ַ���
-;������
-;(dh)=�к�
-;(dl)=�к�
-;(cl)=��ɫ
-;ds:siָ���ַ����׵�ַ��
+;功能为显示一个用0结束的字符串
+;参数：
+;(dh)=行号
+;(dl)=列号
+;(cl)=颜色
+;ds:si指向字符串首地址。
 
 DISPLAYSTR32:	      
-	PUSH AX       
-	PUSH BX
-	PUSH DI
-	MOV BX,SELECTOR_VEDIO
-	MOV ES,BX
+	PUSH EAX       
+	PUSH EBX
+	PUSH EDI
 	MOV AL,160D
 	MUL DH
 	MOV DI,AX
@@ -310,17 +308,17 @@ DISPLAYSTR32:
 	ADD DI,AX
 	MOV BL,CL
 AGAIN32:	
-	MOV CX,[SI]
+	MOV CX,[ESI]
 	MOV CH,0
 	JCXZ NO7CRET32
-	MOV [ES:DI],CL
-	MOV [ES:DI+1],BL
-	INC SI
+	MOV [FS:DI],CL
+	MOV [FS:DI+1],BL
+	INC ESI
 	ADD DI,2
 	JMP SHORT AGAIN32
 	
 NO7CRET32:        
-	POP DI
-        POP BX
-        POP AX
+	POP EDI
+        POP EBX
+        POP EAX
 	RET
