@@ -1,5 +1,6 @@
-JMP	SHORT KERNALSTART	;SHORT 不能少，否则跳转后第一条指令异常，不知为何。
-%include	"inc/kernal.inc"
+	ORG	20000H
+	JMP	SHORT KERNALSTART	;SHORT 不能少，否则跳转后第一条指令异常，不知为何。
+	%include	"inc/kernal.inc"
 [SECTION CODE32]
 ALIGN	32
 [BITS	32]

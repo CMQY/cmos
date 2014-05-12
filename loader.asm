@@ -1,6 +1,6 @@
 %include	"inc/loader.inc"
-ORG	0H
-JMP	RAELMODEBEGIN
+	ORG	10000H
+	JMP	RAELMODEBEGIN
 
 ;由JMP跳入，16位段，设置好GDT及IDT后跳入保护模式
 [SECTION .CODE16]
@@ -88,7 +88,7 @@ READEND:
 	JMP	JUMPTOPROTECTEDMODE
 
 RootSectionStart	DW	47
-RootSectionCnt	DW	7
+RootSectionCnt		DW	7
 				;			0H~7C00H	作系统堆栈
 RootDirSeg	EQU	07F0H	;加载根目录段地址	7CF0H~8D00H	7扇区
 RootDirOffset	EQU	0	;加载根目录偏移
@@ -99,9 +99,15 @@ PhyAddrOffset	DW	0	;加载KERNAL内存偏移
 FATItemSeg	EQU	08D0H	;加载FAT表段地址	8D00H~BB00h	23扇区
 FATItemOffset	EQU	0	;加载FAT表偏移
 				;		
-MemoryInfo	EQU	BB00H	;存放内存信息		BB00H~BD00H	512字节
-				;			DB00H~10000H	空闲
-Page
+;MemoryInfoSeg	EQU	0BB0H	;内存信息段地址		BB04H~BE00H	764字节
+;MemoryInfoOffset	EQU	4	;内存信息偏移	
+				
+;MemoryBlockCount	EQU	0BB00H		;BB00H~BB04H	内存块数，4字节表示
+;
+;CursorPos	EQU	0BE00h	;存储光标位置，4字节	BE00H～BE03H
+				;BE00H～BF00H 	存储各种小变量
+;		;BF00H~10000H	空闲
+;Page
 NH		EQU	2	;磁头数
 NS		EQU	36	;每道扇区数
 DATABEGIN	EQU	52	;加上簇数便是数据扇区
