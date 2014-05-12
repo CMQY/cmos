@@ -98,7 +98,10 @@ PhyAddrOffset	DW	0	;加载KERNAL内存偏移
 
 FATItemSeg	EQU	08D0H	;加载FAT表段地址	8D00H~BB00h	23扇区
 FATItemOffset	EQU	0	;加载FAT表偏移
-				;			BB00H~10000H	共17K
+				;		
+MemoryInfo	EQU	BB00H	;存放内存信息		BB00H~BD00H	512字节
+				;			DB00H~10000H	空闲
+Page
 NH		EQU	2	;磁头数
 NS		EQU	36	;每道扇区数
 DATABEGIN	EQU	52	;加上簇数便是数据扇区
