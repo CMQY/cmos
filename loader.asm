@@ -99,14 +99,14 @@ PhyAddrOffset	DW	0	;加载KERNAL内存偏移
 FATItemSeg	EQU	08D0H	;加载FAT表段地址	8D00H~BB00h	23扇区
 FATItemOffset	EQU	0	;加载FAT表偏移
 				;		
-;MemoryInfoSeg	EQU	0BB0H	;内存信息段地址		BB04H~BE00H	764字节
+;MemoryInfoSeg	EQU	0BB0H	;内存信息段地址		BB04H~C0000H	
 ;MemoryInfoOffset	EQU	4	;内存信息偏移	
 				
-;MemoryBlockCount	EQU	0BB00H		;BB00H~BB04H	内存块数，4字节表示
+;MemoryBlockCount	EQU	0C000H		;C000H~C003H	内存块数，4字节表示
 ;
-;CursorPos	EQU	0BE00h	;存储光标位置，4字节	BE00H～BE03H
-				;BE00H～BF00H 	存储各种小变量
-;		;BF00H~10000H	空闲
+;CursorPos	EQU	0C000h	;存储光标位置，4字节	C000H～C003H
+				;C000H～C200H 	存储各种小变量
+;		;C200H~10000H	空闲
 ;Page
 NH		EQU	2	;磁头数
 NS		EQU	36	;每道扇区数
