@@ -29,28 +29,28 @@ getmemoryinfo:
 	MOV		EAX,0E820H
 	XOR		EBX,EBX
 
-GMI_MEM:
+.GMI_MEM:
 	MOV		ECX,20
 	MOV		EDX,0534D4150H
 	INT		15H
 
-	JC		GMI_FAIL
+	JC		.GMI_FAIL
 	CMP		EBX,0
-	JE		GMI_END
+	JE		.GMI_END
 
 	ADD		DI,20H
 	INC	DWORD	[ES:MemoryBlockCount]
-	JMP		GMI_MEM
-GMI_FAIL:
+	JMP		.GMI_MEM
+.GMI_FAIL:
 	MOV		DX,0400H
 	MOV		CL,02H
 	MOV		AX,CS
 	MOV		DS,AX
 	MOV		SI,GMI_MSG
 	CALL		displaystr16
-GMI_END:
+.GMI_END:
 	RET
 
 [SECTION .DATA]
-GMI_MSG	DB	'Get memory information error.'
+GMI_MSG	DB	'Get memory information error.',0
 	

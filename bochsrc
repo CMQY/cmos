@@ -6,7 +6,7 @@
 megs: 32
 
 # filename of ROM images
-romimage: file=/usr/local/share/bochs/BIOS-bochs-latest
+romimage: file=/usr/local/share/bochs/BIOS-bochs-legacy
 vgaromimage: file=/usr/local/share/bochs/VGABIOS-lgpl-latest
 
 # what disk images will be used

@@ -1,5 +1,5 @@
 %include	"inc/loader.inc"
-	ORG	10000H
+	ORG	0H
 	JMP	RAELMODEBEGIN
 
 ;由JMP跳入，16位段，设置好GDT及IDT后跳入保护模式
@@ -84,6 +84,7 @@ READEND:
 	MOV	CL,02H
 	MOV	SI,MESSAGE4
 	CALL	DISPLAYSTR
+	CALL	getmemoryinfo
 
 	JMP	JUMPTOPROTECTEDMODE
 
@@ -102,7 +103,7 @@ FATItemOffset	EQU	0	;加载FAT表偏移
 ;MemoryInfoSeg	EQU	0BB0H	;内存信息段地址		BB04H~C0000H	
 ;MemoryInfoOffset	EQU	4	;内存信息偏移	
 				
-;MemoryBlockCount	EQU	0BB00H		;BB00H~BB04H	内存块数，4字节表示
+;MemoryBlockCount	EQU	0C000H		;C000H~C003H	内存块数，4字节表示
 ;
 ;CursorPos	EQU	0C000h	;存储光标位置，4字节	C000H～C003H
 				;C000H～C200H 	存储各种小变量
@@ -118,6 +119,8 @@ INFOLOADER	DB	'KERNAL  BIN'
 
 MESSAGE3	DB	'NO KERNAL!',0
 MESSAGE4	DB	'LOAD KERNAL SUCCESSFULLY',0
+
+GMI_MSG		DB	'Get memory information error.',0
 
 ;调用
 
@@ -213,22 +216,58 @@ DISPLAYSTR:
 	MUL DL          
 	ADD DI,AX
 	MOV BL,CL
-AGAIN:	
+.AGAIN:	
 	MOV CX,[SI]
 	MOV CH,0
-	JCXZ NO7CRET
+	JCXZ .NO7CRET
 	MOV [ES:DI],CL
 	MOV [ES:DI+1],BL
 	INC SI
 	ADD DI,2
-	JMP SHORT AGAIN
+	JMP SHORT .AGAIN
 	
-NO7CRET:        
+.NO7CRET:        
 	POP DI
         POP BX
         POP AX
 	RET
+;
+;--------------------------------------------------------------------
+;getmemoryinfo
+;获取内存信息，便显示时调用
+;
+MemoryInfoSeg		EQU	0BB0H
+MemoryInfoOffset	EQU	4H
+MemoryBlockCount	EQU	0H
 
+getmemoryinfo:
+	MOV		DI,MemoryInfoOffset
+	MOV		CX,MemoryInfoSeg
+	MOV		ES,CX
+	MOV	DWORD	[ES:MemoryBlockCount],0
+	MOV		EAX,0E820H
+	XOR		EBX,EBX
+
+.GMI_MEM:
+	MOV		ECX,20
+	MOV		EDX,0534D4150H
+	INT		15H
+
+	JC		.GMI_FAIL
+	CMP		EBX,0
+	JE		.GMI_END
+
+	ADD		DI,20H
+	INC	DWORD	[ES:MemoryBlockCount]
+	JMP		.GMI_MEM
+.GMI_FAIL:
+	MOV		DX,0400H
+	MOV		CL,02H
+	MOV		SI,GMI_MSG
+	CALL		DISPLAYSTR
+.GMI_END:
+	RET
+;-----------------------------------------------------------------
 ;此处跳入保护模式，不开启分页
 JUMPTOPROTECTEDMODE:
 	LGDT	[GDTREG]

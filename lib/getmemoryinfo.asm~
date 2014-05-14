@@ -10,14 +10,14 @@
 ;MemoryBlockCount
 ;头文件中定义
 ;
-;使用外部函数 displaystr，调用时注意链接
+;使用外部函数 displaystr16，调用时注意链接
 ;
 MemoryInfoSeg		EQU	0BB0H
 MemoryInfoOffset	EQU	4H
 MemoryBlockCount	EQU	0H
 
 
-EXTERN	DisplayStr16
+EXTERN	displaystr16
 GLOBAL	getmemoryinfo
 [SECTION .CODE16]
 [BITS	16]
