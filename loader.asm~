@@ -94,18 +94,18 @@ RootSectionCnt		DW	7
 RootDirSeg	EQU	07F0H	;加载根目录段地址	7CF0H~8D00H	7扇区
 RootDirOffset	EQU	0	;加载根目录偏移
 
-PhyAddrSeg	DW	2000H	;加载KERNAL内存段地址
+PhyAddrSeg	DW	2000H	;加载KERNAL内存段地址		20000H
 PhyAddrOffset	DW	0	;加载KERNAL内存偏移
 
 FATItemSeg	EQU	08D0H	;加载FAT表段地址	8D00H~BB00h	23扇区
 FATItemOffset	EQU	0	;加载FAT表偏移
 				;		
-;MemoryInfoSeg	EQU	0BB0H	;内存信息段地址		BB04H~C0000H	
-;MemoryInfoOffset	EQU	4	;内存信息偏移	
-				
-;MemoryBlockCount	EQU	0C000H		;C000H~C003H	内存块数，4字节表示
+;MemoryInfoSeg	EQU	0BB0H	;内存信息段地址			
+;MemoryInfoOffset	EQU	0	;内存信息偏移	
+;由于INT 15H 0E802H 号功能不能调用，改使用0E201H号功能
+;占用  0BB00H～0BB04H 存储内存大小，单位为MB              BB04H~C000H   空闲
 ;
-;CursorPos	EQU	0C000h	;存储光标位置，4字节	C000H～C003H
+CursorPos	EQU	0C000h	;存储光标位置，4字节	C000H～C003H
 				;C000H～C200H 	存储各种小变量
 ;		;C200H~10000H	空闲
 ;Page
@@ -120,7 +120,8 @@ INFOLOADER	DB	'KERNAL  BIN'
 MESSAGE3	DB	'NO KERNAL!',0
 MESSAGE4	DB	'LOAD KERNAL SUCCESSFULLY',0
 
-GMI_MSG		DB	'Get memory information error.',0
+GMI_MSG1	DB	'Get memory information error.',0
+GMI_MSG2	DB	'Get memory information successfully.',0
 
 ;调用
 
@@ -235,37 +236,45 @@ DISPLAYSTR:
 ;--------------------------------------------------------------------
 ;getmemoryinfo
 ;获取内存信息，便显示时调用
+;获取的容量会大于实际容量1M左右
 ;
 MemoryInfoSeg		EQU	0BB0H
-MemoryInfoOffset	EQU	4H
-MemoryBlockCount	EQU	0H
+MemoryInfoOffset	EQU	0H
 
 getmemoryinfo:
-	MOV		DI,MemoryInfoOffset
-	MOV		CX,MemoryInfoSeg
-	MOV		ES,CX
-	MOV	DWORD	[ES:MemoryBlockCount],0
-	MOV		EAX,0E820H
-	XOR		EBX,EBX
+	MOV	AX,0E801H
+	MOV	CX,MemoryInfoSeg
+	MOV	ES,CX
+	XOR	CX,CX
+	XOR	BX,BX
+	XOR	DX,DX
+	INT	15H
+	JC	.FAIL
 
-.GMI_MEM:
-	MOV		ECX,20
-	MOV		EDX,0534D4150H
-	INT		15H
+	XOR	DX,DX
+	MOV	CX,1024
+	DIV	CX
+	CMP	AH,0H
 
-	JC		.GMI_FAIL
-	CMP		EBX,0
-	JE		.GMI_END
-
-	ADD		DI,20H
-	INC	DWORD	[ES:MemoryBlockCount]
-	JMP		.GMI_MEM
-.GMI_FAIL:
-	MOV		DX,0400H
-	MOV		CL,02H
-	MOV		SI,GMI_MSG
-	CALL		DISPLAYSTR
-.GMI_END:
+	MOV	CL,AL
+	MOV	AX,BX
+	MOV	DL,16
+	DIV	DL
+	XOR	AH,AH
+	ADD	AL,CL
+	ADC	AH,0
+	MOV	[ES:MemoryInfoOffset],AX
+	MOV	SI,GMI_MSG2
+	MOV	DX,0600H
+	MOV	CL,02H
+	CALL	DISPLAYSTR
+	JMP	.END
+.FAIL:
+	MOV	SI,GMI_MSG1
+	MOV	DX,0600H
+	MOV	CL,02H
+	CALL	DISPLAYSTR
+.END:
 	RET
 ;-----------------------------------------------------------------
 ;此处跳入保护模式，不开启分页
@@ -286,10 +295,10 @@ JUMPTOPROTECTEDMODE:
 ;GDT
 ;				段基址		段界限	段属性
 GDT:		Descriptor	0,		0,	0
-GDT_DATA:	Descriptor	0,		0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
-GDT_STACK:	Descriptor	0,		0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
-GDT_CODE32:	Descriptor	0,		0FFFFFH,DA_CCOR|DA_DPL0|DA_32|DA_LIMIT_4K
-GDT_VEDIO:	Descriptor	0B8000H,	0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW
+GDT_DATA:	Descriptor	0,		0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW	;DS
+GDT_STACK:	Descriptor	0,		0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW	;SS
+GDT_CODE32:	Descriptor	0,		0FFFFFH,DA_CCOR|DA_DPL0|DA_32|DA_LIMIT_4K	;CS
+GDT_VEDIO:	Descriptor	0B8000H,	0FFFFFH,DA_32|DA_LIMIT_4K|DA_DPL0|DA_DRW	;FS
 
 GDTLEN	EQU	$-GDT
 GDTREG	DW	GDTLEN-1	;加载GDTR时的变量地址;段界限
@@ -304,12 +313,12 @@ SELECTOR_VEDIO	EQU	GDT_VEDIO-GDT
 [SECTION .DATA]
 ALIGN	32
 _MESSAGE_PROTECTEDDMODE	DB	'WELCOME TO PROTECTED MODE!!!',0
-
+_MESSAGE_LOADFINSH	DB	'KERNAL DISPART FINISH',0
 
 
 ;保护模式中使用一下标志
 MESSAGE_PROTECTEDDMODE	EQU	_MESSAGE_PROTECTEDDMODE+LOADERADDR
-
+MESSAGE_LOADFINSH	EQU	_MESSAGE_LOADFINSH
 [SECTION STACK]
 STACKSPACE:
 TIMES	1024	DB	0	;栈空间初定为1K
@@ -331,8 +340,14 @@ PROTECTED_BEGIN:
 	MOV	CL,02H
 	MOV	ESI,MESSAGE_PROTECTEDDMODE
 	CALL	DISPLAYSTR32
-
-	JMP	SELECTOR_CODE32:20000H
+	
+	MOV	DWORD [CursorPos],7*160	;初始化指针位置
+	CALL	loadkernal
+	MOV	ESI,MESSAGE_LOADFINSH
+	MOV	DX,0800H
+	MOV	CL,02H
+	CALL	DISPLAYSTR32
+	JMP	SELECTOR_CODE32:40000H
 
 [SECTION .CODE32_CALL]		;32位下的调用
 ALIGN	32
@@ -370,3 +385,65 @@ NO7CRET32:
         POP EBX
         POP EAX
 	RET
+
+;
+;把ELF格式内核加载进内存地址
+;进入保护模式后调用
+;
+;
+;
+;
+KernalAddr	EQU	20000H	;加载KERNAL内存段地址
+
+loadkernal:
+	XOR	ESI,ESI
+	MOV	CX,[KernalAddr+2CH]
+	MOVZX	ECX,CX
+	MOV	ESI,[KernalAddr+1CH]
+	ADD	ESI,KernalAddr
+.LKMOVE:
+	MOV	EAX,[ESI]
+	CMP	EAX,0
+	JZ	.PASS
+	PUSH	DWORD [ESI+010H]
+	MOV	EAX,[ESI+04H]
+	ADD	EAX,KernalAddr
+	PUSH	EAX
+	PUSH	DWORD	[ESI+08H]
+	CALL	memcpyasm	;void *memcpy(void *destin, void *source, unsigned n); 
+.PASS:
+	ADD	ESI,020H
+	DEC	ECX
+	JNZ	.LKMOVE
+
+	RET
+;------------------------------------------------------
+;memcpyasm
+;堆栈传递参数
+;DS:ESI->ES:EDI
+;------------------------------------------------------
+memcpyasm:		;void *memcpy(void *destin, void *source, unsigned n); 
+	PUSH	EBP
+	MOV	EBP,ESP
+	PUSH	EDI
+	PUSH	ESI
+	PUSH	ECX
+	PUSH	EAX
+	MOV	EDI,[EBP+8]
+	MOV	ESI,[EBP+12]
+	MOV	ECX,[EBP+16]
+	MOV	AX,SELECTOR_DATA
+	MOV	ES,AX
+        CLD
+.1	CMP	ECX,0
+	JZ	.2
+	MOVSB
+	DEC	ECX
+	JMP	.1
+.2	MOV	EAX,[EBP+16]
+	POP	EAX
+	POP	ECX
+	POP	ESI
+	POP	EDI
+	LEAVE
+	RET	12

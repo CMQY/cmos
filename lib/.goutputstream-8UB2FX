@@ -1,0 +1,10 @@
+;函数调用惯例
+;惯例指明寄存器EAX、EDX和ECX的内容必须有调用者自己负责保存，被调用函数可以随意破坏
+;EBX、ESI、EDI、ESP、EBP必须由被调用者保存
+SELECTOR_DATA	EQU	8H
+SELECTOR_STACK	EQU	10H
+SELECTOR_CODE32	EQU	18H
+SELECTOR_VEDIO	EQU	20H
+;print(char *str)
+;
+;

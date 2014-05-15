@@ -1,8 +1,6 @@
 ;º¯Êýµ÷ÓÃ¹ßÀý
 ;¹ßÀýÖžÃ÷ŒÄŽæÆ÷EAX¡¢EDXºÍECXµÄÄÚÈÝ±ØÐëÓÐµ÷ÓÃÕß×ÔŒºžºÔð±£Žæ£¬±»µ÷ÓÃº¯Êý¿ÉÒÔËæÒâÆÆ»µ
 ;EBX¡¢ESI¡¢EDI¡¢ESP¡¢EBP±ØÐëÓÉ±»µ÷ÓÃÕß±£Žæ
-
-;
 SELECTOR_DATA	EQU	8H
 SELECTOR_STACK	EQU	10H
 SELECTOR_CODE32	EQU	18H
@@ -31,7 +29,7 @@ print:
 .p_NEXT:
 	CMP	EDI,0FA0H
 	JB	.p_NEXT2
-	CALL	.SCROLL			;unfinish .scroll
+	CALL	.SCROLL
 .p_NEXT2:
 	LODSB
 	CMP	AL,0AH
