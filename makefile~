@@ -5,7 +5,7 @@ LD		=	ld -m elf_i386 -static
 
 
 
-everything	=	boot.bin loader.bin kernal.bin lib/disbin.o
+everything	=	boot.bin loader.bin kernal.bin 
 boot.bin : boot.asm inc/fat16head.inc
 	nasm -o $@ $<
 loader.bin : loader.asm inc/loader.inc
@@ -34,7 +34,7 @@ build : boot.bin loader.bin kernal.bin
 	cp kernal.bin /mnt
 	umount /mnt
 
-kernal.o : kernal.c
+kernal.o : kernal.c /inc/type.h
 	$(GCC32) -o $@ $<
 kernal.bin : kernal.o lib/print.o lib/exit.o
 	$(LD) -Ttext 0x40000 -o $@ $^

@@ -42,12 +42,12 @@ void _start()
 
 	gdt descriptor = { 0, 0, 0, 0, 0 };
 	*gdttemp = descriptor;
-	gdt descriptor2 = { 0xffff, 0, 0, 0x0F00 | DA_CCOR | DA_DPL0 | DA_32 | DA_LIMIT_4K, 0 };  //selector_code
-	*(gdttemp + 1) = descriptor2;
-	gdt descriptor3 = { 0xffff, 0, 0, 0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL0 | DA_DRW, 0 };
-	*(gdttemp + 2) = descriptor3;		//selector_data
-	*(gdttemp + 3) = descriptor3;		//selector_stack
-	gdt descriptor4 = { 0xffff, 0x000, 0, 0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL0 | DA_DRW, 0 };
+	gdt descriptor2 = { 0xffff, 0, 0, 0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL0 | DA_DRW, 0 };
+	*(gdttemp + 1) = descriptor2;//selector_data
+	gdt descriptor3 = { 0xffff, 0, 0, 0x0F00 | DA_CCOR | DA_DPL0 | DA_32 | DA_LIMIT_4K, 0 }; 
+	*(gdttemp + 2) = descriptor2;	//selector_stack	
+	*(gdttemp + 3) = descriptor3;		 //selector_code
+	gdt descriptor4 = { 0xffff, 0x8000, 0xB, 0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL0 | DA_DRW, 0 };
 	*(gdttemp + 4) = descriptor4;		//selector_vedio
 
 	gdtr gdtrtemp = { 0xffff, GDTADDR };
@@ -56,8 +56,16 @@ void _start()
 		"lgdt (%%ebx) \n\t"
 		"movw $0x7c00,%%ax \n\t"
 		"movw %%ax,%%sp \n\t"
-		"nop\n\t"
-		::"b"(pgdtr):
+		"movw $0x08,%%ax\n\t"
+		"movw %%ax,%%ds \n\t"
+		"movw $0x10,%%ax\n\t"
+		"movw %%ax,%%ss \n\t"
+		"movw $0x20,%%ax\n\t"
+		"movw %%ax,%%fs \n\t"
+		"ljmp $0x18,$1f\n\t"
+		"1:"
+		"movw $12,%%ax"
+		::"b"(pgdtr):"%ax"
 		);
 	print("GDTR change.\n");
 	exit();
