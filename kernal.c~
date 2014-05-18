@@ -65,7 +65,7 @@ void _start()
 		"ljmp $0x18,$1f\n\t"
 		"1:"
 		"movw $12,%%ax"
-		::"b"(pgdtr):"a"
+		::"b"(pgdtr):"%ax"
 		);
 	print("GDTR change.\n");
 	exit();

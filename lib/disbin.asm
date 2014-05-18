@@ -41,4 +41,4 @@ db_B:
 db_NEXT:
 	LOOP	db_L
 	MOV	[CursorPos],EDI
-	RET	4
+	RET

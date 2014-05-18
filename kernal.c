@@ -1,5 +1,7 @@
 /*********************************************************************************************
 进入内核后，0xC200H～0x100000H将成为空闲空间。用作新的GDT和IDT表和安装中断
+0xC200H ~ 0x1C1FFH 作为GDT表 大小 10000H
+0x1C200H ~ 0x1C9FF 作为IDT表，大小 800H
 0x100000H～0x500000H为分页空间
 
 0～0xBB00H将作为系统栈空间 共46K
@@ -18,6 +20,7 @@ PageAddr	EQU	101000H	;第一张页表
 #define GDTADDR 0xc200
 void print(char *c);
 void exit();
+void initidt();
 
 typedef struct _gdt{
 	b16 limitl;
@@ -38,6 +41,7 @@ void _start()
 	print("c farmart kernal is executing.\n^_^");
 	print("hahahahahhahaaha\n");
 
+	//重置GDT  预留4K bits 空间
 	gdt * gdttemp = GDTADDR;
 
 	gdt descriptor = { 0, 0, 0, 0, 0 };
@@ -54,19 +58,23 @@ void _start()
 	gdtr * pgdtr = &gdtrtemp;
 	asm volatile(
 		"lgdt (%%ebx) \n\t"
-		"movw $0x7c00,%%ax \n\t"
-		"movw %%ax,%%sp \n\t"
-		"movw $0x08,%%ax\n\t"
-		"movw %%ax,%%ds \n\t"
+		"movw $0x7c00,%%cx \n\t"
 		"movw $0x10,%%ax\n\t"
 		"movw %%ax,%%ss \n\t"
+		"movw %%cx,%%sp \n\t"
+		"movw $0x08,%%ax\n\t"
+		"movw %%ax,%%ds \n\t"
 		"movw $0x20,%%ax\n\t"
 		"movw %%ax,%%fs \n\t"
 		"ljmp $0x18,$1f\n\t"
 		"1:"
 		"movw $12,%%ax"
-		::"b"(pgdtr):"%ax"
+		::"b"(pgdtr) : "%ax", "%cx"
 		);
 	print("GDTR change.\n");
+
+	initidt();
+
+	//设置IDT并加载中断
 	exit();
 }

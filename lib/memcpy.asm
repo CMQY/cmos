@@ -16,4 +16,4 @@ memcpyasm:		;void *memcpy(void *destin, void *source, unsigned n);
 	POP	ESI
 	POP	EDI
 	LEAVE
-	RET	12
+	RET

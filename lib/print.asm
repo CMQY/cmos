@@ -59,7 +59,7 @@ print:
 	POP	EDI
 	POP	ESI
 	LEAVE
-	RET	4
+	RET
 
 .SCROLL:
 	PUSH	EBP

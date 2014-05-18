@@ -2,6 +2,7 @@
 typedef unsigned int	b32;
 typedef	unsigned short	b16;
 typedef char		b8;
+typedef long long	b64;
 
 //----------------------------------------------------------------------------
 // 描述符类型值说明
@@ -76,6 +77,6 @@ typedef char		b8;
 #define		selector_code	0x8
 #define		selector_data	0x10
 #define		selector_stack	0x18
-#define		selector_vedio	0x20
+#define		selector_vedio	0x20	//fs
 
 #pragma pack (1) 
