@@ -1,5 +1,4 @@
 #include"inc/type.h"
-void print(char * str);
 void do_div_invalid()
 {
 	print("int 0\n");

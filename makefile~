@@ -34,7 +34,7 @@ build : boot.bin loader.bin kernal.bin
 	cp kernal.bin /mnt
 	umount /mnt
 
-kernal.o : kernal.c /inc/type.h
+kernal.o : kernal.c inc/type.h
 	$(GCC32) -o $@ $<
 kernal.bin : kernal.o lib/print.o lib/exit.o
 	$(LD) -Ttext 0x40000 -o $@ $^

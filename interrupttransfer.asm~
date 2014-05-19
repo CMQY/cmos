@@ -49,7 +49,7 @@ int_1_debug:
 
 int_2_nmi_interrupt:
 	push	0
-	push	do_nmi_interrupt
+	push	do_NMI_interrupt
 	jmp	interrupt_server_route
 
 int_3_breakpoint:
@@ -113,7 +113,7 @@ int_15_reserved:
 
 int_16_coprocessor_error:
 	push	0
-	push	do_coprocessor_error
+	push	do_coprocesstor_error
 	jmp	interrupt_server_route
 
 

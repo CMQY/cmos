@@ -24,7 +24,7 @@ typedef long long	b64;
 #define    DA_DPL2		0x40 	// DPL = 2
 #define    DA_DPL3		0x60 	// DPL = 3
 //----------------------------------------------------------------------------
-// 存储段描述符类型值说明
+// 存储段描述符类型值说明			设置GDT时使用
 //----------------------------------------------------------------------------
 #define    DA_DR		0x90 	// 存在的只读数据段类型值
 #define    DA_DRW		0x92 	// 存在的可读写数据段属性值
@@ -34,14 +34,19 @@ typedef long long	b64;
 #define    DA_CCO		0x9C 	// 存在的只执行一致代码段属性值
 #define    DA_CCOR		0x9E 	// 存在的可执行可读一致代码段属性值
 //----------------------------------------------------------------------------
-// 系统段描述符类型值说明
+// 系统段描述符类型值说明			设置IDT时使用
 //----------------------------------------------------------------------------
-#define    DA_LDT		0x82 	// 局部描述符表段类型值
-#define    DA_TaskGate	0x85 	// 任务门类型值
-#define    DA_386TSS	0x89 	// 可用 386 任务状态段类型值
-#define    DA_386CGate	0x8C 	// 386 调用门类型值
-#define    DA_386IGate	0x8E 	// 386 中断门类型值
-#define    DA_386TGate	0x8F 	// 386 陷阱门类型值
+#define    DA_LDT		0x8200 	// 局部描述符表段类型值
+#define    DA_TaskGate	0x8500 	// 任务门类型值
+#define    DA_386TSS	0x8900 	// 可用 386 任务状态段类型值
+#define    DA_386CGate	0x8C00 	// 386 调用门类型值
+#define    DA_386IGate	0x8E00 	// 386 中断门类型值
+#define    DA_386TGate	0x8F00 	// 386 陷阱门类型值
+
+#define		IA_DPL0		0x0000
+#define		IA_DPL1		0x2000
+#define		IA_DPL2		0x4000
+#define		IA_DPL3		0x6000
 //----------------------------------------------------------------------------
 
 
@@ -77,6 +82,6 @@ typedef long long	b64;
 #define		selector_code	0x8
 #define		selector_data	0x10
 #define		selector_stack	0x18
-#define		selector_vedio	0x20
+#define		selector_vedio	0x20	//fs
 
 #pragma pack (1) 
