@@ -1,42 +1,44 @@
 %include "inc/protectedasm.inc"
 ;----------------------------------------------------------------------------------------------------------------------------
-;������	���Ƿ�	˵��						����				�����		����Դ
+;ÏòÁ¿ºÅ	ÖúŒÇ·û	ËµÃ÷						ÀàÐÍ				ŽíÎóºÅ		²úÉúÔŽ
 ;------------------------------------------------------------------------------------------------------------------------
-;0		;DE		������						����		��		DIV��IDIVָ��
-;1		;DB		����						����/����	��		�κδ�����������ã�����INT 1ָ��
-;2		--		NMI�ж�						�ж�		��		�������ⲿ�ж�
-;3		;BP		�ϵ�						����		��		INT 3ָ��
-;4		;OF		���						����		��		INTOָ��
-;5		;BR		�߽緶Χ����				����		��		BOUNDָ��
-;6		;UD		��Ч�����루δ��������룩	����		��		UD2ָ������Ĳ����롣��Pentium Pro�м������ָ�
-;7		;NM		�豸�����ڣ�����ѧЭ������������		��		�����WAIT/FWAITָ��
-;8		;DF		˫�ش���					�쳣��ֹ	�У�0��	�κοɲ����쳣��NMI��INTR��ָ��
-;9		--		Э�������γ�Խ��������		����		��		����ָ�386�Ժ��CPU���������쳣��
-;10		;TS		��Ч������״̬��TSS			����		��		���񽻻������TSS
-;11		;NP		�β�����					����		��		���ضμĴ��������ϵͳ��
-;12		;SS		��ջ�δ���					����		��		��ջ������SS�Ĵ�������
-;13		;GP		һ�㱣������				����		��		�κ��ڴ����ú������������
-;14		;PF		ҳ�����					����		��		�κ��ڴ�����
-;15		--		��Intel����������ʹ�ã�					�� 
-;16		;MF		x87 FPU���������ѧ����	����		��		x87 FPU�����WAIT/FWAITָ��
-;17		;AC		������					����		�У�0��	���ڴ����κ����ݵ�����
-;18		;MC		�������					�쳣��ֹ	��		�����루���У��Ͳ���Դ��CPU�����йأ����ڴ�����������
-;19		;XF		SIMD�����쳣				����		��		SSE��SSE2����ָ�PIII������������
-;20-31	--		��Intel����������ʹ�ã�
-;32-255	--		�û����壨�Ǳ������ж�		�ж�				�ⲿ�жϻ���INT nָ��
+;0		;DE		³ý³öŽí						¹ÊÕÏ		ÎÞ		DIV»òIDIVÖžÁî
+;1		;DB		µ÷ÊÔ						¹ÊÕÏ/ÏÝÚå	ÎÞ		ÈÎºÎŽúÂë»òÊýŸÝÒýÓÃ£¬»òÊÇINT 1ÖžÁî
+;2		--		NMIÖÐ¶Ï						ÖÐ¶Ï		ÎÞ		·ÇÆÁ±ÎÍâ²¿ÖÐ¶Ï
+;3		;BP		¶Ïµã						ÏÝÚå		ÎÞ		INT 3ÖžÁî
+;4		;OF		Òç³ö						ÏÝÚå		ÎÞ		INTOÖžÁî
+;5		;BR		±ßœç·¶Î§³¬³ö				¹ÊÕÏ		ÎÞ		BOUNDÖžÁî
+;6		;UD		ÎÞÐ§²Ù×÷Âë£šÎŽ¶šÒå²Ù×÷Âë£©	¹ÊÕÏ		ÎÞ		UD2ÖžÁî»ò±£ÁôµÄ²Ù×÷Âë¡££šPentium ProÖÐŒÓÈëµÄÐÂÖžÁî£©
+;7		;NM		Éè±ž²»ŽæÔÚ£šÎÞÊýÑ§Ð­ŽŠÀíÆ÷£©¹ÊÕÏ		ÎÞ		ž¡µã»òWAIT/FWAITÖžÁî
+;8		;DF		Ë«ÖØŽíÎó					Òì³£ÖÕÖ¹	ÓÐ£š0£©	ÈÎºÎ¿É²úÉúÒì³£¡¢NMI»òINTRµÄÖžÁî
+;9		--		Ð­ŽŠÀíÆ÷¶Î³¬Ôœ£š±£Áô£©		¹ÊÕÏ		ÎÞ		ž¡µãÖžÁî£š386ÒÔºóµÄCPU²»²úÉúžÃÒì³££©
+;10		;TS		ÎÞÐ§µÄÈÎÎñ×ŽÌ¬¶ÎTSS			¹ÊÕÏ		ÓÐ		ÈÎÎñœ»»»»ò·ÃÎÊTSS
+;11		;NP		¶Î²»ŽæÔÚ					¹ÊÕÏ		ÓÐ		ŒÓÔØ¶ÎŒÄŽæÆ÷»ò·ÃÎÊÏµÍ³¶Î
+;12		;SS		¶ÑÕ»¶ÎŽíÎó					¹ÊÕÏ		ÓÐ		¶ÑÕ»²Ù×÷ºÍSSŒÄŽæÆ÷ŒÓÔØ
+;13		;GP		Ò»°ã±£»€ŽíÎó				¹ÊÕÏ		ÓÐ		ÈÎºÎÄÚŽæÒýÓÃºÍÆäËû±£»€Œì²é
+;14		;PF		Ò³ÃæŽíÎó					¹ÊÕÏ		ÓÐ		ÈÎºÎÄÚŽæÒýÓÃ
+;15		--		£šIntel±£Áô£¬ÇëÎðÊ¹ÓÃ£©					ÎÞ 
+;16		;MF		x87 FPUž¡µãŽíÎó£šÊýÑ§ŽíÎó£©	¹ÊÕÏ		ÎÞ		x87 FPUž¡µã»òWAIT/FWAITÖžÁî
+;17		;AC		¶ÔÆðŒì²é					¹ÊÕÏ		ÓÐ£š0£©	¶ÔÄÚŽæÖÐÈÎºÎÊýŸÝµÄÒýÓÃ
+;18		;MC		»úÆ÷Œì²é					Òì³£ÖÕÖ¹	ÎÞ		ŽíÎóÂë£šÈôÓÐ£©ºÍ²úÉúÔŽÓëCPUÀàÐÍÓÐ¹Ø£š±ŒÌÚŽŠÀíÆ÷Òýœø£©
+;19		;XF		SIMDž¡µãÒì³£				¹ÊÕÏ		ÎÞ		SSEºÍSSE2ž¡µãÖžÁî£šPIIIŽŠÀíÆ÷Òýœø£©
+;20-31	--		£šIntel±£Áô£¬ÇëÎðÊ¹ÓÃ£©
+;32-255	--		ÓÃ»§¶šÒå£š·Ç±£Áô£©ÖÐ¶Ï		ÖÐ¶Ï				Íâ²¿ÖÐ¶Ï»òÕßINT nÖžÁî
 ;----------------------------------------------------------------------------------------------------------------------------
 
 extern	do_div_invalid,do_debug,do_nmi_interrupt,do_breakpoint,do_overflow,do_bounds_check
 extern	do_invalid_opcode,do_device_unexit,do_double_error,do_coprocessor_seg_error
 extern	do_invalid_tss,do_seg_dispresent,do_stack_error,do_general_protection,do_page_fault
-extern	do_reserved,do_coprocessor_error
+extern	do_reserved,do_coprocessor_error,do_timer,do_keyboard
 
 
 global	int_0_div_invalid,int_1_debug,int_2_nmi_interrupt,int_3_breakpoint,int_4_overflow,int_5_bounds_check
 global	int_6_invalid_opcode,int_7_device_unexit,int_8_double_error,int_9_coprocessor_seg_error
 global	int_10_invalid_tss,int_11_seg_dispresent,int_12_stack_error,int_13_general_protection,int_14_page_fault
-global	int_15_reserved,int_16_coprocessor_error
-
+global	int_15_reserved,int_16_coprocessor_error,int_32_timer,int_33_keyboard
+;----------------------------------------------------------------------
+;处理函数在interrupt.c中定义
+;----------------------------------------------------------------------
 int_0_div_invalid:
 	push	0
 	push	do_div_invalid
@@ -49,7 +51,7 @@ int_1_debug:
 
 int_2_nmi_interrupt:
 	push	0
-	push	do_NMI_interrupt
+	push	do_nmi_interrupt
 	jmp	interrupt_server_route
 
 int_3_breakpoint:
@@ -113,34 +115,47 @@ int_15_reserved:
 
 int_16_coprocessor_error:
 	push	0
-	push	do_coprocesstor_error
+	push	do_coprocessor_error
 	jmp	interrupt_server_route
 
+
+;------------------------------------------------------------
+;外部中断服务
+;-----------------------------------------------------------
+int_32_timer:	;时钟中断
+	push	0;
+	push	do_timer
+	jmp	interrupt_server_route
+
+int_33_keyboard:	;键盘中断
+	push	0;
+	push	do_keyboard
+	jmp	interrupt_server_route
 
 ;--------------------------------------------------------
 ;interrupt_server_route
 ;
 ;
-; �жϴ��������У������ȼ������仯���Ὣԭss,espѹ��ջ��  
-; �û����򣨽��̣�������Ȩ�����жϴ�������֮ǰCPU������12�ֽڣ�EFLAGS��CS��EIP��  
-; ѹ���жϴ������򣨶����Ǳ��жϴ��룩�Ķ�ջ�У������̵��ں�̬ջ�У����������Զ��������  
-; ��Щ�쳣�����ж�ʱ��CPU�ڲ������һ��������ѹ���ջ  
-; Ȼ���жϴ��������ַ��ջ����ջָ��ָ��esp_isr��  
-; Ȼ������32λ�Ĵ�����ջ  
-; Ȼ��ds��es��fs��gs��ջ����ʱ��ջָ��ָ��esp_push_all_regs  
+; ÖÐ¶ÏŽŠÀí¹ý³ÌÖÐ£¬ÈôÓÅÏÈŒ¶·¢Éú±ä»¯£¬»áœ«Ô­ss,espÑ¹ÈëÕ»ÖÐ  
+; ÓÃ»§³ÌÐò£šœø³Ì£©œ«¿ØÖÆÈšœ»žøÖÐ¶ÏŽŠÀí³ÌÐòÖ®Ç°CPUœ«ÖÁÉÙ12×ÖœÚ£šEFLAGS¡¢CS¡¢EIP£©  
+; Ñ¹ÈëÖÐ¶ÏŽŠÀí³ÌÐò£š¶ø²»ÊÇ±»ÖÐ¶ÏŽúÂë£©µÄ¶ÑÕ»ÖÐ£¬ŒŽœø³ÌµÄÄÚºËÌ¬Õ»ÖÐ£¬ÕâÖÖÇé¿öÓëÔ¶µ÷ÓÃÏàËÆ  
+; ÓÐÐ©Òì³£ÒýÆðÖÐ¶ÏÊ±£¬CPUÄÚ²¿»á²úÉúÒ»žö³öŽíÂëÑ¹Èë¶ÑÕ»  
+; È»ºóœ«ÖÐ¶ÏŽŠÀí³ÌÐòµØÖ·ÈëÕ»£¬¶ÑÕ»ÖžÕëÖžÏòesp_isrŽŠ  
+; È»ºóËùÓÐ32Î»ŒÄŽæÆ÷ÈëÕ»  
+; È»ºóds£¬es£¬fs£¬gsÈëÕ»£¬ŽËÊ±¶ÑÕ»ÖžÕëÖžÏòesp_push_all_regs  
 ;   
-; ��ջ���ݣ�  
-; -------------------�׶�1�����ȼ��ı䣬����ԭ���Ķ�ջ---------------------------  
-; 72 - ԭss  
-; 66 - ԭesp  
-; -------------------�׶�2������Ȩ�����жϴ�������֮ǰ��CPU�Զ�ѹջ--------------  
-; 64 - ԭeflags  
-; 60 - cs                   <- �����ѡ���  
-; 56 - eip                  <- ���ص�ַ  
-; 52 - error_code/0         <- ���������û�У���û���жϴ��������Լ�ѹ��0��������  
-; -------------------�׶�3-------------------------------------------------------  
-; 48 - �жϷ�������ַ     <- ��������������Լ�ѹջ  
-; -------------------�׶�4-------------------------------------------------------  
+; ¶ÑÕ»ÄÚÈÝ£º  
+; -------------------œ×¶Î1£¬ÓÅÏÈŒ¶žÄ±ä£¬±£»€Ô­ÀŽµÄ¶ÑÕ»---------------------------  
+; 72 - Ô­ss  
+; 66 - Ô­esp  
+; -------------------œ×¶Î2£¬¿ØÖÆÈšœ»žøÖÐ¶ÏŽŠÀí³ÌÐòÖ®Ç°£¬CPU×Ô¶¯Ñ¹Õ»--------------  
+; 64 - Ô­eflags  
+; 60 - cs                   <- ŽúÂë¶ÎÑ¡Ôñ·û  
+; 56 - eip                  <- ·µ»ØµØÖ·  
+; 52 - error_code/0         <- ŽíÎóÂë¿ÉÄÜÃ»ÓÐ£¬ÈôÃ»ÓÐÖÐ¶ÏŽŠÀí³ÌÐò×ÔŒºÑ¹Èë0£¬ŒûÏÂÃæ  
+; -------------------œ×¶Î3-------------------------------------------------------  
+; 48 - ÖÐ¶Ï·þÎñ³ÌÐòµØÖ·     <- ÓÉÏÂÃæž÷žöŽŠÀí×ÔŒºÑ¹Õ»  
+; -------------------œ×¶Î4-------------------------------------------------------  
 ; 44 - eax  
 ; 40 - ecx  
 ; 36 - edx  
@@ -177,5 +192,5 @@ interrupt_server_route:
 	pop	es
 	pop	ds
 	popad
-	add	esp,8	;�����������ʹ�����
+	add	esp,8	;Ìø¹ý·þÎñ³ÌÐòºÍŽíÎóÂë
 	iret

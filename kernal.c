@@ -40,31 +40,6 @@ void _start()
 {
 	print("c farmart kernal is executing.\n^_^");
 	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-	print("hahahahahhahaaha\n");
-
 	//重置GDT  预留4K bits 空间
 	gdt * gdttemp = GDTADDR;
 
@@ -98,7 +73,7 @@ void _start()
 	print("GDTR change.\n");
 
 	initidt();      //设置IDT并加载中断
-	print("IDTR load successfully.");
+	print("IDTR load successfully.\n");
 /******************************************************************
 设置8259A
 
@@ -115,51 +90,41 @@ void _start()
 	asm volatile(	
 	"movb	$0x11,%%al \n\t"
 	"outb	%%al,$0x20 \n\t"		
-	"nop	\n\t"
-	"nop	\n\t"
+	".word	0x00eb,0x00eb \n\t"
 	"outb	%%al,$0xa0 \n\t"		
-	"nop	\n\t"
-	"nop	\n\t"
+	".word	0x00eb,0x00eb \n\t"
 	"movb	$0x20,%%al \n\t"		
 	"outb	%%al,$0x21 \n\t"		
-	"nop	\n\t"
-	"nop	\n\t"
+	".word	0x00eb,0x00eb \n\t"
 	"movb	$0x28,%%al \n\t"		
 	"outb	%%al,$0xa1 \n\t"		
-	"nop	\n\t"
-	"nop	\n\t"
+	".word	0x00eb,0x00eb \n\t"
 
 	"movb	$0x04,%%al \n\t"		
 	"outb	%%al,$0x21 \n\t"		
-	"nop	\n\t"
-	"nop	\n\t"
-
+	".word	0x00eb,0x00eb \n\t"
 	"movb	$0x02,%%al \n\t"		
 	"outb	%%al,$0xa1 \n\t"		
-	"nop	\n\t"
-	"nop	\n\t"
+	".word	0x00eb,0x00eb \n\t"
 
-	"movb	$0x01,%%al \n\t"		
+	"movb	$0x01,%%al \n\t"    		
 	"outb	%%al,$0x21 \n\t"
-	"nop	\n\t"
-	"nop	\n\t"
+	".word	0x00eb,0x00eb \n\t"
 
 	"outb	%%al,$0xa1 \n\t"		
-	"nop	\n\t"
-	"nop	\n\t"
+	".word	0x00eb,0x00eb \n\t"
 
-	"movb	$0xff,%%al \n\t"		
+	"movb	$0xfe,%%al \n\t"		
 	"outb	%%al,$0x21 \n\t"
-	"nop	\n\t"
-	"nop	\n\t"
+	".word	0x00eb,0x00eb \n\t"
 
 	"movb	$0xff,%%al \n\t"		
 	"outb	%%al,$0xa1 \n\t"
-	"nop	\n\t"
-	"nop	\n\t"
+	".word	0x00eb,0x00eb \n\t"
+	"sti	\n\t"
 
-	:::"%ax"	
+	:::"%ax","memory"	
 );
-
+//上内联汇编中改变的寄存器需要“memory”是因为出现指令“sti”
 	exit();
 }

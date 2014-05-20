@@ -68,3 +68,15 @@ void do_coprocessor_error()
 {
 	print("int 16\n");
 }
+
+/********************************************************************
+外部中断处理程序
+*********************************************************************/
+void do_keyboard()
+{
+	print("keyboard id pressed");
+}
+void do_timer()
+{
+	print("#time ahahaha\n");
+}
