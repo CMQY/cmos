@@ -1,47 +1,47 @@
-//¶¨Òå
+//å®šä¹‰
 typedef unsigned int	b32;
 typedef	unsigned short	b16;
 typedef char		b8;
 typedef long long	b64;
 
 //----------------------------------------------------------------------------
-// ÃèÊö·ûÀàÐÍÖµËµÃ÷
-// ÆäÖÐ:
+// æè¿°ç¬¦ç±»åž‹å€¼è¯´æ˜Ž
+// å…¶ä¸­:
 //       DA_  : Descriptor Attribute
-//       D    : Êý¾Ý¶Î
-//       C    : ´úÂë¶Î
-//       S    : ÏµÍ³¶Î
-//       R    : Ö»¶Á
-//       RW   : ¶ÁÐ´
-//       A    : ÒÑ·ÃÎÊ
-//       ÆäËü : ¿É°´ÕÕ×ÖÃæÒâË¼Àí½â
+//       D    : æ•°æ®æ®µ
+//       C    : ä»£ç æ®µ
+//       S    : ç³»ç»Ÿæ®µ
+//       R    : åªè¯»
+//       RW   : è¯»å†™
+//       A    : å·²è®¿é—®
+//       å…¶å®ƒ : å¯æŒ‰ç…§å­—é¢æ„æ€ç†è§£
 //----------------------------------------------------------------------------
-#define    DA_32		0x4000 	// 32 Î»¶Î
-#define    DA_LIMIT_4K	0x8000 	// ¶Î½çÏÞÁ£¶ÈÎª 4K ×Ö½Ú
+#define    DA_32		0x4000 	// 32 ä½æ®µ
+#define    DA_LIMIT_4K	0x8000 	// æ®µç•Œé™ç²’åº¦ä¸º 4K å­—èŠ‚
 
 #define    DA_DPL0		0x00 	// DPL = 0
 #define    DA_DPL1		0x20 	// DPL = 1
 #define    DA_DPL2		0x40 	// DPL = 2
 #define    DA_DPL3		0x60 	// DPL = 3
 //----------------------------------------------------------------------------
-// ´æ´¢¶ÎÃèÊö·ûÀàÐÍÖµËµÃ÷			ÉèÖÃGDTÊ±Ê¹ÓÃ
+// å­˜å‚¨æ®µæè¿°ç¬¦ç±»åž‹å€¼è¯´æ˜Ž			è®¾ç½®GDTæ—¶ä½¿ç”¨
 //----------------------------------------------------------------------------
-#define    DA_DR		0x90 	// ´æÔÚµÄÖ»¶ÁÊý¾Ý¶ÎÀàÐÍÖµ
-#define    DA_DRW		0x92 	// ´æÔÚµÄ¿É¶ÁÐ´Êý¾Ý¶ÎÊôÐÔÖµ
-#define    DA_DRWA		0x93 	// ´æÔÚµÄÒÑ·ÃÎÊ¿É¶ÁÐ´Êý¾Ý¶ÎÀàÐÍÖµ
-#define    DA_C			0x98 	// ´æÔÚµÄÖ»Ö´ÐÐ´úÂë¶ÎÊôÐÔÖµ
-#define    DA_CR		0x9A 	// ´æÔÚµÄ¿ÉÖ´ÐÐ¿É¶Á´úÂë¶ÎÊôÐÔÖµ
-#define    DA_CCO		0x9C 	// ´æÔÚµÄÖ»Ö´ÐÐÒ»ÖÂ´úÂë¶ÎÊôÐÔÖµ
-#define    DA_CCOR		0x9E 	// ´æÔÚµÄ¿ÉÖ´ÐÐ¿É¶ÁÒ»ÖÂ´úÂë¶ÎÊôÐÔÖµ
+#define    DA_DR		0x90 	// å­˜åœ¨çš„åªè¯»æ•°æ®æ®µç±»åž‹å€¼
+#define    DA_DRW		0x92 	// å­˜åœ¨çš„å¯è¯»å†™æ•°æ®æ®µå±žæ€§å€¼
+#define    DA_DRWA		0x93 	// å­˜åœ¨çš„å·²è®¿é—®å¯è¯»å†™æ•°æ®æ®µç±»åž‹å€¼
+#define    DA_C			0x98 	// å­˜åœ¨çš„åªæ‰§è¡Œä»£ç æ®µå±žæ€§å€¼
+#define    DA_CR		0x9A 	// å­˜åœ¨çš„å¯æ‰§è¡Œå¯è¯»ä»£ç æ®µå±žæ€§å€¼
+#define    DA_CCO		0x9C 	// å­˜åœ¨çš„åªæ‰§è¡Œä¸€è‡´ä»£ç æ®µå±žæ€§å€¼
+#define    DA_CCOR		0x9E 	// å­˜åœ¨çš„å¯æ‰§è¡Œå¯è¯»ä¸€è‡´ä»£ç æ®µå±žæ€§å€¼
 //----------------------------------------------------------------------------
-// ÏµÍ³¶ÎÃèÊö·ûÀàÐÍÖµËµÃ÷			ÉèÖÃIDTÊ±Ê¹ÓÃ
+// ç³»ç»Ÿæ®µæè¿°ç¬¦ç±»åž‹å€¼è¯´æ˜Ž			è®¾ç½®IDTæ—¶ä½¿ç”¨
 //----------------------------------------------------------------------------
-#define    DA_LDT		0x8200 	// ¾Ö²¿ÃèÊö·û±í¶ÎÀàÐÍÖµ
-#define    DA_TaskGate	0x8500 	// ÈÎÎñÃÅÀàÐÍÖµ
-#define    DA_386TSS	0x8900 	// ¿ÉÓÃ 386 ÈÎÎñ×´Ì¬¶ÎÀàÐÍÖµ
-#define    DA_386CGate	0x8C00 	// 386 µ÷ÓÃÃÅÀàÐÍÖµ
-#define    DA_386IGate	0x8E00 	// 386 ÖÐ¶ÏÃÅÀàÐÍÖµ
-#define    DA_386TGate	0x8F00 	// 386 ÏÝÚåÃÅÀàÐÍÖµ
+#define    DA_LDT	0x82 	// å±€éƒ¨æè¿°ç¬¦è¡¨æ®µç±»åž‹å€¼
+#define    DA_TaskGate	0x8500 	// ä»»åŠ¡é—¨ç±»åž‹å€¼
+#define    DA_386TSS	0x89 	// å¯ç”¨ 386 ä»»åŠ¡çŠ¶æ€æ®µç±»åž‹å€¼
+#define    DA_386CGate	0x8C00 	// 386 è°ƒç”¨é—¨ç±»åž‹å€¼
+#define    DA_386IGate	0x8E00 	// 386 ä¸­æ–­é—¨ç±»åž‹å€¼
+#define    DA_386TGate	0x8F00 	// 386 é™·é˜±é—¨ç±»åž‹å€¼
 
 #define		IA_DPL0		0x0000
 #define		IA_DPL1		0x2000
@@ -50,32 +50,32 @@ typedef long long	b64;
 //----------------------------------------------------------------------------
 
 
-// Ñ¡Ôñ×ÓÍ¼Ê¾:
-//         ©³©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©×©¥©¥©·
-//         ©§ 15 ©§ 14 ©§ 13 ©§ 12 ©§ 11 ©§ 10 ©§ 9  ©§ 8  ©§ 7  ©§ 6  ©§ 5  ©§ 4  ©§ 3  ©§ 2  ©§ 1  ©§ 0  ©§
-//         ©Ç©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ß©¥©¥©ï©¥©¥©ï©¥©¥©ß©¥©¥©Ï
-//         ©§                                 ÃèÊö·ûË÷Òý                                 ©§ TI ©§   RPL    ©§
-//         ©»©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©ß©¥©¥©ß©¥©¥©¥©¥©¥©¿
+// é€‰æ‹©å­å›¾ç¤º:
+//         â”â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”³â”â”â”“
+//         â”ƒ 15 â”ƒ 14 â”ƒ 13 â”ƒ 12 â”ƒ 11 â”ƒ 10 â”ƒ 9  â”ƒ 8  â”ƒ 7  â”ƒ 6  â”ƒ 5  â”ƒ 4  â”ƒ 3  â”ƒ 2  â”ƒ 1  â”ƒ 0  â”ƒ
+//         â”£â”â”â”»â”â”â”»â”â”â”»â”â”â”»â”â”â”»â”â”â”»â”â”â”»â”â”â”»â”â”â”»â”â”â”»â”â”â”»â”â”â”»â”â”â•‹â”â”â•‹â”â”â”»â”â”â”«
+//         â”ƒ                                 æè¿°ç¬¦ç´¢å¼•                                 â”ƒ TI â”ƒ   RPL    â”ƒ
+//         â”—â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”»â”â”â”»â”â”â”â”â”â”›
 //
-// RPL(Requested Privilege Level): ÇëÇóÌØÈ¨¼¶£¬ÓÃÓÚÌØÈ¨¼ì²é¡£
+// RPL(Requested Privilege Level): è¯·æ±‚ç‰¹æƒçº§ï¼Œç”¨äºŽç‰¹æƒæ£€æŸ¥ã€‚
 //
-// TI(Table Indicator): ÒýÓÃÃèÊö·û±íÖ¸Ê¾Î»
-//	TI=0 Ö¸Ê¾´ÓÈ«¾ÖÃèÊö·û±íGDTÖÐ¶ÁÈ¡ÃèÊö·û£»
-//	TI=1 Ö¸Ê¾´Ó¾Ö²¿ÃèÊö·û±íLDTÖÐ¶ÁÈ¡ÃèÊö·û¡£
+// TI(Table Indicator): å¼•ç”¨æè¿°ç¬¦è¡¨æŒ‡ç¤ºä½
+//	TI=0 æŒ‡ç¤ºä»Žå…¨å±€æè¿°ç¬¦è¡¨GDTä¸­è¯»å–æè¿°ç¬¦ï¼›
+//	TI=1 æŒ‡ç¤ºä»Žå±€éƒ¨æè¿°ç¬¦è¡¨LDTä¸­è¯»å–æè¿°ç¬¦ã€‚
 //
 
 //----------------------------------------------------------------------------
-// Ñ¡Ôñ×ÓÀàÐÍÖµËµÃ÷
-// ÆäÖÐ:
+// é€‰æ‹©å­ç±»åž‹å€¼è¯´æ˜Ž
+// å…¶ä¸­:
 //       SA_  : Selector Attribute
 
-#define    SA_RPL0		0x0	// ©·
-#define    SA_RPL1		0x1	// ©Ç RPL
-#define    SA_RPL2		0x2	// ©§
-#define    SA_RPL3		0x3	// ©¿
+#define    SA_RPL0		0x0	// â”“
+#define    SA_RPL1		0x1	// â”£ RPL
+#define    SA_RPL2		0x2	// â”ƒ
+#define    SA_RPL3		0x3	// â”›
 
-#define    SA_TIG		0x	0	// ©·TI
-#define    SA_TIL		0x	4	// ©¿
+#define    SA_TIG		0x	0	// â”“TI
+#define    SA_TIL		0x	4	// â”›
 //----------------------------------------------------------------------------
 
 

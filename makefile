@@ -6,7 +6,7 @@ LD		=	ld -m elf_i386 -static
 
 
 everything	=	boot.bin loader.bin kernal.bin 
-kernal		=	kernal.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o
+kernal		=	kernal.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o
 boot.bin : boot.asm inc/fat16head.inc
 	nasm -o $@ $<
 loader.bin : loader.asm inc/loader.inc
@@ -44,7 +44,10 @@ initinterrupt.o : initinterrupt.c inc/type.h
 	$(GCC32) -o $@ $<
 interrupttransfer.o : interrupttransfer.asm
 	$(NASM32) -o $@ $<
-
+inittss.o : inittss.c inc/type.h
+	$(GCC32) -o $@ $<
+initgdt.o :initgdt.c inc/type.h
+	$(GCC32) -o $@ $<
 
 kernal.bin : $(kernal)
 	$(LD) -Ttext 0x40000 -o $@ $^

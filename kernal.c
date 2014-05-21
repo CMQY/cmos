@@ -1,12 +1,13 @@
 /*********************************************************************************************
-进入内核后，0xC200H～0x100000H将成为空闲空间。用作新的GDT和IDT表和安装中断
-0xC200H ~ 0x1C1FFH 作为GDT表 大小 10000H
-0x1C200H ~ 0x1C9FF 作为IDT表，大小 800H
-0x100000H～0x500000H为分页空间
+进入内核后，0xC200～0x100000将成为空闲空间。用作新的GDT和IDT表和安装中断
+0xC200 ~ 0x1C1FF 作为GDT表 大小 10000H
+0x1C200 ~ 0x1C9FF 作为IDT表，大小 800H
+0x1CA00 ~ 0x1EE00 作为TSS位置  大小9K
+0x100000～0x500000为分页空间
 
-0～0xBB00H将作为系统栈空间 共46K
+0～0xBB00将作为系统栈空间 共46K
 
-0xBB00H～0xC200H存储各种变量
+0xBB00～0xC200存储各种变量
 其中
 
 CursorPos	EQU	0C000h	;存储光标位置，4字节	C000H～C003H
@@ -21,110 +22,47 @@ PageAddr	EQU	101000H	;第一张页表
 void print(char *c);
 void exit();
 void initidt();
+void set_tss();
+void setgdt();
 
-typedef struct _gdt{
-	b16 limitl;
-	b16 basel16;
-	b8 basem8;
-	b16 attribute;             //含段界限高4位  bit8 - bit12 
-	b8 baseh8;
-}gdt;
 typedef struct _gdtr{
 	b16 gdtlimit;
 	b32 gdtrbase;
 }gdtr;
-
-
 
 void _start()
 {
 	print("c farmart kernal is executing.\n^_^");
 	print("hahahahahhahaaha\n");
 	//重置GDT  预留4K bits 空间
-	gdt * gdttemp = GDTADDR;
-
-	gdt descriptor = { 0, 0, 0, 0, 0 };
-	*gdttemp = descriptor;
-	gdt descriptor2 = { 0xffff, 0, 0, 0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL0 | DA_DRW, 0 };
-	*(gdttemp + 1) = descriptor2;//selector_data
-	gdt descriptor3 = { 0xffff, 0, 0, 0x0F00 | DA_CCOR | DA_DPL0 | DA_32 | DA_LIMIT_4K, 0 }; 
-	*(gdttemp + 2) = descriptor2;	//selector_stack	
-	*(gdttemp + 3) = descriptor3;		 //selector_code
-	gdt descriptor4 = { 0xffff, 0x8000, 0xB, 0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL0 | DA_DRW, 0 };
-	*(gdttemp + 4) = descriptor4;		//selector_vedio
+	setgdt();
 
 	gdtr gdtrtemp = { 0xffff, GDTADDR };
 	gdtr * pgdtr = &gdtrtemp;
 	asm volatile(
 		"lgdt (%%ebx) \n\t"
-		"movw $0x7c00,%%cx \n\t"
-		"movw $0x10,%%ax\n\t"
-		"movw %%ax,%%ss \n\t"
-		"movw %%cx,%%sp \n\t"
-		"movw $0x08,%%ax\n\t"
-		"movw %%ax,%%ds \n\t"
-		"movw $0x20,%%ax\n\t"
-		"movw %%ax,%%fs \n\t"
-		"ljmp $0x18,$1f\n\t"
+		"movw $0xBB00,%%eax \n\t"
+		"movw $0x10,%%cx \n\t"
+		"movw %%cx,%%ss \n\t"
+		"movw %%eax,%%esp \n\t"		//修改系统栈，只能在此处内联汇编
+		"ljmp $0x18,$1f\n\t"             //选择子属性，顺序未变
 		"1:"
-		"movw $12,%%ax"
-		::"b"(pgdtr) : "%ax", "%cx"
+		::"b"(pgdtr) : "%eax", "%cx"
 		);
 	print("GDTR change.\n");
 
+/**/	set_tss(); 
+	print("tss load successfully.\n");
+
+
+
 	initidt();      //设置IDT并加载中断
 	print("IDTR load successfully.\n");
-/******************************************************************
-设置8259A
-
-1,往端口20H（主片）或A0H（从片）写入ICW1
-2,往端口21H（主片）或A1H（从片）写入ICW2
-3,往端口21H（主片）或A1H（从片）写入ICW3
-4,往端口21H（主片）或A1H（从片）写入ICW4
-5,往端口21H（主片）或A1H（从片）写入OCW1
-注意次序不能颠倒
 
 
-****************************************************************/
+/**********************************************************************
+设置TSS
+***********************************************************************/
 
-	asm volatile(	
-	"movb	$0x11,%%al \n\t"
-	"outb	%%al,$0x20 \n\t"		
-	".word	0x00eb,0x00eb \n\t"
-	"outb	%%al,$0xa0 \n\t"		
-	".word	0x00eb,0x00eb \n\t"
-	"movb	$0x20,%%al \n\t"		
-	"outb	%%al,$0x21 \n\t"		
-	".word	0x00eb,0x00eb \n\t"
-	"movb	$0x28,%%al \n\t"		
-	"outb	%%al,$0xa1 \n\t"		
-	".word	0x00eb,0x00eb \n\t"
-
-	"movb	$0x04,%%al \n\t"		
-	"outb	%%al,$0x21 \n\t"		
-	".word	0x00eb,0x00eb \n\t"
-	"movb	$0x02,%%al \n\t"		
-	"outb	%%al,$0xa1 \n\t"		
-	".word	0x00eb,0x00eb \n\t"
-
-	"movb	$0x01,%%al \n\t"    		
-	"outb	%%al,$0x21 \n\t"
-	".word	0x00eb,0x00eb \n\t"
-
-	"outb	%%al,$0xa1 \n\t"		
-	".word	0x00eb,0x00eb \n\t"
-
-	"movb	$0xfe,%%al \n\t"		
-	"outb	%%al,$0x21 \n\t"
-	".word	0x00eb,0x00eb \n\t"
-
-	"movb	$0xff,%%al \n\t"		
-	"outb	%%al,$0xa1 \n\t"
-	".word	0x00eb,0x00eb \n\t"
-	"sti	\n\t"
-
-	:::"%ax","memory"	
-);
-//上内联汇编中改变的寄存器需要“memory”是因为出现指令“sti”
 	exit();
 }

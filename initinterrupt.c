@@ -110,6 +110,61 @@ void initidt()
 	b32 limit = IDTLIMIT;
 	lidt(base, limit);
 
+
+/******************************************************************
+设置8259A
+
+1,往端口20H（主片）或A0H（从片）写入ICW1
+2,往端口21H（主片）或A1H（从片）写入ICW2
+3,往端口21H（主片）或A1H（从片）写入ICW3
+4,往端口21H（主片）或A1H（从片）写入ICW4
+5,往端口21H（主片）或A1H（从片）写入OCW1
+注意次序不能颠倒
+
+
+****************************************************************/
+
+	asm volatile(	
+	"movb	$0x11,%%al \n\t"
+	"outb	%%al,$0x20 \n\t"		
+	".word	0x00eb,0x00eb \n\t"
+	"outb	%%al,$0xa0 \n\t"		
+	".word	0x00eb,0x00eb \n\t"
+	"movb	$0x20,%%al \n\t"		
+	"outb	%%al,$0x21 \n\t"		
+	".word	0x00eb,0x00eb \n\t"
+	"movb	$0x28,%%al \n\t"		
+	"outb	%%al,$0xa1 \n\t"		
+	".word	0x00eb,0x00eb \n\t"
+
+	"movb	$0x04,%%al \n\t"		
+	"outb	%%al,$0x21 \n\t"		
+	".word	0x00eb,0x00eb \n\t"
+	"movb	$0x02,%%al \n\t"		
+	"outb	%%al,$0xa1 \n\t"		
+	".word	0x00eb,0x00eb \n\t"
+
+	"movb	$0x01,%%al \n\t"    		
+	"outb	%%al,$0x21 \n\t"
+	".word	0x00eb,0x00eb \n\t"
+
+	"outb	%%al,$0xa1 \n\t"		
+	".word	0x00eb,0x00eb \n\t"
+
+	"movb	$0xff,%%al \n\t"		
+	"outb	%%al,$0x21 \n\t"
+	".word	0x00eb,0x00eb \n\t"
+
+	"movb	$0xff,%%al \n\t"		
+	"outb	%%al,$0xa1 \n\t"
+	".word	0x00eb,0x00eb \n\t"
+	"sti	\n\t"
+
+	:::"%ax","memory"	
+);
+//上内联汇编中改变的寄存器需要“memory”是因为出现指令“sti”
+
+
 /*****************************************************************************
 设置8253定时芯片
 ******************************************************************************/
