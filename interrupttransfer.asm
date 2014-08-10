@@ -179,6 +179,7 @@ int_80_systemcall:
 ;--------------------------------------------------------
 
 interrupt_server_route:
+	cli
 	pushad
 	push	ds
 	push	es
@@ -202,4 +203,5 @@ interrupt_server_route:
 	pop	ds
 	popad
 	add	esp,8	;Ìø¹ý·þÎñ³ÌÐòºÍŽíÎóÂë
+	sti
 	iret
