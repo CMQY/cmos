@@ -71,6 +71,9 @@ void int_15_reserved();
 void int_16_coprocessor_error();
 void int_32_timer();
 void int_33_keyboard();
+
+
+void int_80_systemcall();
 /******************************************************************
 初始化中断
 在内核中被调用
@@ -99,7 +102,7 @@ void initidt()
 ******************************************************************************/
 	idtload(32, (b32) &int_32_timer, DA_386IGate);
 	idtload(33, (b32) &int_33_keyboard, DA_386IGate);
-
+	idtload(80, (b32) &int_80_systemcall, DA_386IGate);
 
 
 

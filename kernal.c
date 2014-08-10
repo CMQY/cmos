@@ -59,6 +59,10 @@ void _start()
 	initidt();      //设置IDT并加载中断
 	print("IDTR load successfully.\n");
 
+	asm volatile(
+		"int $80\n\t"
+		:::
+		);
 
 /**********************************************************************
 设置TSS
