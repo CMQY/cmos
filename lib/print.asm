@@ -30,7 +30,7 @@ print:
 .p_NEXT:
 	CMP	EDI,0FA0H
 	JB	.p_NEXT2
-	CALL	.SCROLL			;unfinish .scroll
+	CALL	.SCROLL		;不通用卷屏	
 .p_NEXT2:
 	LODSB
 	CMP	AL,0AH

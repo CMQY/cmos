@@ -72,10 +72,10 @@ void do_coprocessor_error()
 /********************************************************************
 外部中断处理程序
 *********************************************************************/
-void do_keyboard()
+/*void do_keyboard()
 {
-	print("keyboard id pressed");
-}
+	readkey();    //link keyboard_ctl.asm
+} */
 void do_timer()
 {
 	print("#time ahahaha\n");

@@ -186,7 +186,7 @@ interrupt_server_route:
 	mov	fs,ax
 	
 	mov	eax,[esp+48]
-	call	eax
+	call	eax    ;中断处理程序的参数在[esp+52]处
 	mov	al,0x20
 	out	0x20,al
 	pop	gs

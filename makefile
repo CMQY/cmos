@@ -6,7 +6,7 @@ LD		=	ld -m elf_i386 -static
 
 
 everything	=	boot.bin loader.bin kernal.bin 
-kernal		=	kernal.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o
+kernal		=	kernal.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o keyboard_ctl.o lib/printbin.o lib/scrollscreen.o
 boot.bin : boot.asm inc/fat16head.inc
 	nasm -o $@ $<
 loader.bin : loader.asm inc/loader.inc
@@ -15,8 +15,10 @@ loader.bin : loader.asm inc/loader.inc
 # kernal.bin : kernal.asm inc/kernal.inc
 # 	nasm -o $@ $<
 
-lib/disbin.o : /lib/disbin.asm
+lib/disbin.o : lib/disbin.asm
 	$(NASM32) -o $@ $^
+lib/scrollscreen.o : lib/scrollscreen.asm
+	$(NASM32) -o $@ $<
 lib/displaymeminfo.o : lib/displaymeminfo.c inc/type.h
 	$(GCC) -c -m32 -fno-builtin -o $@ $<
 lib/displaystr16.o : lib/displaystr16.asm
@@ -26,6 +28,8 @@ lib/getmemoryinfo.o : lib/getmemoryinfo.asm
 	ld	
 lib/print.o : lib/print.asm
 	$(NASM32) -o $@ $<
+lib/printbin.o : lib/printbin.asm
+	$(NASM32) -o $@ $<
 lib/exit.o : lib/exit.asm
 	$(NASM32) -o $@ $<
 build : boot.bin loader.bin kernal.bin
@@ -34,11 +38,15 @@ build : boot.bin loader.bin kernal.bin
 	cp loader.bin /mnt
 	cp kernal.bin /mnt
 	umount /mnt
+	rm *.bin *.o lib/*.o
 
 kernal.o : kernal.c inc/type.h
 	$(GCC32) -o $@ $<
 interrupt.o : interrupt.c inc/type.h
 	$(GCC32) -o $@ $<
+
+keyboard_ctl.o :keyboard_ctl.asm
+	$(NASM32) -o $@ $<
 
 initinterrupt.o : initinterrupt.c inc/type.h
 	$(GCC32) -o $@ $<

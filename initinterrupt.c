@@ -151,7 +151,7 @@ void initidt()
 	"outb	%%al,$0xa1 \n\t"		
 	".word	0x00eb,0x00eb \n\t"
 
-	"movb	$0xff,%%al \n\t"		
+	"movb	$0xfd,%%al \n\t"		//允许键盘中断
 	"outb	%%al,$0x21 \n\t"
 	".word	0x00eb,0x00eb \n\t"
 
