@@ -1,11 +1,14 @@
 %include	"inc/loader.inc"
 	ORG	0H
 	JMP	RAELMODEBEGIN
-
 ;由JMP跳入，16位段，设置好GDT及IDT后跳入保护模式
 [SECTION .CODE16]
 [BITS 16]
 RAELMODEBEGIN:
+	MOV AX,0BE0H          ;初始化光标位置
+	MOV DS,AX
+	MOV word [2],2*160
+
 	MOV	AX,CS
 	MOV	DS,AX
 	MOV	AX,TopOfStack
@@ -52,10 +55,9 @@ NEXTSECTION:
 
 
 NOLOADER:
-	MOV	DX,0200H
-	MOV	CL,02H
-	MOV	SI,MESSAGE3
-	CALL	DISPLAYSTR
+	PUSH MESSAGE3
+	CALL print16 
+	ADD SP,2
 	JMP $
 
 FOUND:
@@ -80,10 +82,9 @@ NEXTFATREAD:
 	ADD	WORD [PhyAddrSeg],20H
 	JMP	NEXTFATREAD
 READEND:
-	MOV	DX,0200H
-	MOV	CL,02H
-	MOV	SI,MESSAGE4
-	CALL	DISPLAYSTR
+	PUSH MESSAGE4
+	CALL	print16	
+	ADD	SP,2
 	CALL	getmemoryinfo
 
 	JMP	JUMPTOPROTECTEDMODE
@@ -105,7 +106,7 @@ FATItemOffset	EQU	0	;加载FAT表偏移
 ;由于INT 15H 0E802H 号功能不能调用，改使用0E201H号功能
 ;占用  0BB00H～0BB04H 存储内存大小，单位为MB              BB04H~C000H   空闲
 ;
-CursorPos	EQU	0C000h	;存储光标位置，4字节	C000H～C003H
+CursorPos	EQU	0BE00h	;存储光标位置，4字节	BE00H～BE03H
 				;C000H～C200H 	存储各种小变量
 ;		;C200H~10000H	空闲
 ;Page
@@ -118,10 +119,8 @@ TopOfStack	EQU	7C00H
 INFOLOADER	DB	'KERNAL  BIN'
 
 MESSAGE3	DB	'NO KERNAL!',0
-MESSAGE4	DB	'LOAD KERNAL SUCCESSFULLY',0
+MESSAGE4	DB	'LOAD KERNAL SUCCESSFULLY',0AH,0
 
-GMI_MSG1	DB	'Get memory information error.',0
-GMI_MSG2	DB	'Get memory information successfully.',0
 
 ;调用
 
@@ -196,89 +195,197 @@ GoReading:
 	POP	AX
 	RET
 
-
+;与2014.8.12.16.10 抛弃使用
 ;功能为显示一个用0结束的字符串
 ;参数：
 ;(dh)=行号
 ;(dl)=列号
 ;(cl)=颜色
 ;ds:si指向字符串首地址。
-
-DISPLAYSTR:	      
-	PUSH AX       
-	PUSH BX
-	PUSH DI
-	MOV BX,0B800H
-	MOV ES,BX
-	MOV AL,160D
-	MUL DH
-	MOV DI,AX
-	MOV AL,2        
-	MUL DL          
-	ADD DI,AX
-	MOV BL,CL
-.AGAIN:	
-	MOV CX,[SI]
-	MOV CH,0
-	JCXZ .NO7CRET
-	MOV [ES:DI],CL
-	MOV [ES:DI+1],BL
-	INC SI
-	ADD DI,2
-	JMP SHORT .AGAIN
-	
-.NO7CRET:        
-	POP DI
-        POP BX
-        POP AX
-	RET
 ;
+;DISPLAYSTR:	      
+;	PUSH AX       
+;	PUSH BX
+;	PUSH DI
+;	MOV BX,0B800H
+;	MOV ES,BX
+;	MOV AL,160D
+;	MUL DH
+;	MOV DI,AX
+;	MOV AL,2        
+;	MUL DL          
+;	ADD DI,AX
+;	MOV BL,CL
+;.AGAIN:	
+;	MOV CX,[SI]
+;	MOV CH,0
+;	JCXZ .NO7CRET
+;	MOV [ES:DI],CL
+;	MOV [ES:DI+1],BL
+;	INC SI
+;	ADD DI,2
+;	JMP SHORT .AGAIN
+;	
+;.NO7CRET:        
+;	POP DI
+;       POP BX
+;        POP AX
+;	RET
+;
+;
+;
+;2014.8.11.20.14修正
 ;--------------------------------------------------------------------
 ;getmemoryinfo
 ;获取内存信息，便显示时调用
 ;获取的容量会大于实际容量1M左右
 ;可确保分页物理内存有效
 ;
-MemoryInfoSeg		EQU	0BB0H
-MemoryInfoOffset	EQU	0H
-
-getmemoryinfo:
-	MOV	AX,0E801H
-	MOV	CX,MemoryInfoSeg
-	MOV	ES,CX
-	XOR	CX,CX
-	XOR	BX,BX
-	XOR	DX,DX
-	INT	15H
-	JC	.FAIL
-
-	XOR	DX,DX
-	MOV	CX,1024
-	DIV	CX
-	CMP	AH,0H
-
-	MOV	CL,AL
-	MOV	AX,BX
-	MOV	DL,16
-	DIV	DL
-	XOR	AH,AH
-	ADD	AL,CL
-	ADC	AH,0
-	MOV	[ES:MemoryInfoOffset],AX
-	MOV	SI,GMI_MSG2
-	MOV	DX,0600H
-	MOV	CL,02H
-	CALL	DISPLAYSTR
-	JMP	.END
-.FAIL:
-	MOV	SI,GMI_MSG1
-	MOV	DX,0600H
-	MOV	CL,02H
-	CALL	DISPLAYSTR
-.END:
-	RET
+;MemoryInfoSeg		EQU	0BB0H
+;MemoryInfoOffset	EQU	0H
+;
+;getmemoryinfo:
+;	MOV	AX,0E801H
+;	MOV	CX,MemoryInfoSeg
+;	MOV	ES,CX
+;	XOR	CX,CX
+;	XOR	BX,BX
+;	XOR	DX,DX
+;	INT	15H
+;	JC	.FAIL
+;
+;	XOR	DX,DX
+;	MOV	CX,1024
+;	DIV	CX
+;	CMP	AH,0H
+;
+;	MOV	CL,AL
+;	MOV	AX,BX
+;	MOV	DL,16
+;	DIV	DL
+;	XOR	AH,AH
+;	ADD	AL,CL
+;	ADC	AH,0
+;	MOV	[ES:MemoryInfoOffset],AX
+;	MOV	SI,GMI_MSG2
+;	MOV	DX,0600H
+;	MOV	CL,02H
+;	CALL	DISPLAYSTR
+;	JMP	.END
+;.FAIL:
+;	MOV	SI,GMI_MSG1
+;	MOV	DX,0600H
+;	MOV	CL,02H
+;	CALL	DISPLAYSTR
+;.END:
+;	RET
 ;-----------------------------------------------------------------
 ;此处跳入保护模式
+MemoryInfoSeg       EQU 0BB0H
+MemoryInfoOffset    EQU 0H
+
+message1 db 'Get memory information error!',0AH,0
+message2 db 'Get memory information successfully',0AH,0
+
+
+getmemoryinfo:
+		push bp
+		mov bp,sp
+		push es
+		push di
+		push bx
+		push cx
+		push dx
+		xor dx,dx
+
+		mov ax,MemoryInfoSeg
+		mov es,ax
+		mov di,MemoryInfoOffset+4
+		mov ebx,0
+.next:
+		mov eax,0E820h
+		mov ecx,20
+		mov edx,0534d4150h
+		int 0x15
+		jc .err
+		inc dx
+		cmp ebx,0
+		jz .end5
+		add di,20
+		jmp .next
+
+.err:	
+		push message1
+		call print16
+		add sp,2
+
+.end5:	
+		mov word [es:2],dx ;存放内存块数
+
+		push message2
+		call print16
+		add sp,2
+		pop dx
+		pop cx
+		pop bx
+		pop di
+		pop es
+		leave 
+		ret
+
+CursorPos16   EQU 0BE0h  ;4 BITS  16位下光标位置，进入32位后修正
+
+print16:
+		push bp
+		mov bp,sp
+
+		push es
+		push si
+		push di
+		push ds
+		mov ax,CursorPos16
+		mov ds,ax
+		mov di,[2]
+		pop ds
+		mov ax,0b800h
+		mov es,ax
+		mov si,[bp+4]
+		cld
+.next:
+		lodsb
+		cmp al,0
+		jz .end
+		cmp al,0ah
+		jnz .con
+		mov ax,di
+		mov cl,160
+		div cl
+		inc al
+		mul cl
+		mov di,ax
+		jmp .next
+
+
+.con:
+		stosb 
+
+		mov al,02
+		stosb
+		
+		jmp .next
+
+.end:	
+		push ds
+		mov ax,CursorPos16
+		mov ds,ax
+		mov [2],di
+		pop ds
+		pop di
+		pop si
+		pop es
+		leave
+		ret
+
 JUMPTOPROTECTEDMODE:
 	LGDT	[GDTREG]
 	CLI
@@ -344,11 +451,11 @@ PROTECTED_BEGIN:
 	MOV	ESI,MESSAGE_PROTECTEDDMODE
 	CALL	DISPLAYSTR32
 
-	CALL	setuppage			;开启分页，内核分页平坦映射
-	MOV	DX,0700H
-	MOV	CL,02H
-	MOV	ESI,MESSAGE_PAGE
-	CALL	DISPLAYSTR32
+	;CALL	setuppage			;开启分页，内核分页平坦映射
+	;MOV	DX,0700H
+	;MOV	CL,02H
+	;MOV	ESI,MESSAGE_PAGE
+	;CALL	DISPLAYSTR32
 
 
 	MOV	DWORD [CursorPos],7*160	;初始化指针位置

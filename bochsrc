@@ -12,6 +12,7 @@ vgaromimage: file=/usr/local/share/bochs/VGABIOS-lgpl-latest
 # what disk images will be used
 floppya: 2_88=boot.img, status=inserted
 #floppya: 1_44=a.img, status=inserted
+#floppya : 2_88=test.img, status=inserted
 
 # choose the boot disk.
 boot: a

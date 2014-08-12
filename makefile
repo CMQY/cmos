@@ -2,7 +2,7 @@ NASM32		=	nasm -f elf
 GCC32		=	gcc -c -m32 -fno-builtin
 AS32		=	as -32
 LD		=	ld -m elf_i386 -static
-
+LD86	=	ld86 -T 0
 
 
 everything	=	boot.bin loader.bin kernal.bin 
@@ -11,7 +11,8 @@ boot.bin : boot.asm inc/fat16head.inc
 	nasm -o $@ $<
 loader.bin : loader.asm inc/loader.inc
 	nasm -o $@ $<
- 
+
+
 # kernal.bin : kernal.asm inc/kernal.inc
 # 	nasm -o $@ $<
 
@@ -21,11 +22,7 @@ lib/scrollscreen.o : lib/scrollscreen.asm
 	$(NASM32) -o $@ $<
 lib/displaymeminfo.o : lib/displaymeminfo.c inc/type.h
 	$(GCC) -c -m32 -fno-builtin -o $@ $<
-lib/displaystr16.o : lib/displaystr16.asm
-	$(NASM32) -o $@ $<
-lib/getmemoryinfo.o : lib/getmemoryinfo.asm
-	$(NASM32) -o $@ $<
-	ld	
+
 lib/print.o : lib/print.asm
 	$(NASM32) -o $@ $<
 lib/printbin.o : lib/printbin.asm
