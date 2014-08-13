@@ -24,6 +24,7 @@ void exit();
 void initidt();
 void set_tss();
 void setgdt();
+void memmgr();
 
 typedef struct _gdtr{
 	b16 gdtlimit;
@@ -58,6 +59,9 @@ void _start()
 
 	initidt();      //设置IDT并加载中断
 	print("IDTR load successfully.\n");
+
+	memmgr();
+	print("memory have display\n");
 
 	asm volatile(
 		"int $80\n\t"
