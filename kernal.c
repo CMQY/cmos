@@ -61,7 +61,7 @@ void _start()
 	print("IDTR load successfully.\n");
 
 	memmgr();
-	print("memory have display\n");
+	print("memory have been control\n");
 
 	asm volatile(
 		"int $80\n\t"

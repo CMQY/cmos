@@ -565,7 +565,7 @@ memcpyasm:		;void *memcpy(void *destin, void *source, unsigned n);
 	LEAVE
 	RET	12
 
-
+;于2014.8.13.18.52抛弃使用
 ;-------------------------------------------------
 ;开启分页
 ;页目录表地址为1M
@@ -575,64 +575,64 @@ memcpyasm:		;void *memcpy(void *destin, void *source, unsigned n);
 ;
 ;页目录表及页表属性
 ;-------------------------------------------------
-P_P	EQU	01B	;存在位P=0表示不存在于内存中
-P_RW	EQU	010B	;读写权限，P/W=0表示只读
-P_US	EQU	0100B	;U/S=0表示系统权限
-P_PWT	EQU	01000B	;控制缓冲策略，PWT=0时使用Write-back策略，=1使用Write-through策略
-P_PCD	EQU	010000B	;PCD=0表示可以被缓冲
-P_A	EQU	0100000B	;表示是否被访问
-P_D	EQU	01000000B	;是否被写入
-P_PS	EQU	010000000B	;决定页大小
+;P_P	EQU	01B	;存在位P=0表示不存在于内存中
+;P_RW	EQU	010B	;读写权限，P/W=0表示只读
+;P_US	EQU	0100B	;U/S=0表示系统权限
+;P_PWT	EQU	01000B	;控制缓冲策略，PWT=0时使用Write-back策略，=1使用Write-through策略
+;P_PCD	EQU	010000B	;PCD=0表示可以被缓冲
+;P_A	EQU	0100000B	;表示是否被访问
+;P_D	EQU	01000000B	;是否被写入
+;P_PS	EQU	010000000B	;决定页大小
 ;P_PAT	EQU	010000000B	;
-P_G	EQU	0100000000B	;全局页
+;P_G	EQU	0100000000B	;全局页
 
 ;-------------------------------------------------
 ;-------------------------------------------------
-MemoryInfoAddr	EQU	0BB00H  ;4 BITS
-PageDirAddr	EQU	100000H
-PageAddr	EQU	101000H
+;MemoryInfoAddr	EQU	0BB00H  ;4 BITS
+;PageDirAddr	EQU	100000H
+;PageAddr	EQU	101000H
 ;
-setuppage:
-	XOR	EDX,EDX
-	MOV	EAX,[MemoryInfoAddr]
-	MOV	EBX,4H
-	DIV	EBX
-	MOV	ECX,EAX
-	TEST	EAX,EAX
-	JZ	.CON
-	INC	ECX			;计算需分页表数。存在ECX
-.CON:
-	PUSH	ECX
-	MOV	AX,SELECTOR_DATA
-	MOV	ES,AX
-	MOV	EDI,100000H		;目录表地址为100000H
-	MOV	EAX,101000H		;第一个页表地址
-	OR	EAX,P_P|P_RW
-.1:
-	STOSD
-	ADD	EAX,1000H
-	LOOP	.1			;填充页目录表
-
-	
-	POP	EAX
-	MOV	EBX,1024
-	MUL	EBX
-	MOV	ECX,EAX			;装载次数，因为目录表连续，所以连续装载
-	MOV	EDI,101000H
-	XOR	EAX,EAX
-	MOV	EAX,P_P|P_RW
-.2:
-	STOSD	
-	ADD	EAX,1000H
-	LOOP	.2			;页表装载完成
-
-	MOV	EAX,100000H
-	MOV	CR3,EAX
-	MOV	EAX,CR0
-	OR	EAX,80000000H
-	MOV	CR0,EAX
-
-	JMP	SHORT	.3
-
-.3:
-	RET
+;setuppage:
+;	XOR	EDX,EDX
+;	MOV	EAX,[MemoryInfoAddr]
+;	MOV	EBX,4H
+;	DIV	EBX
+;	MOV	ECX,EAX
+;	TEST	EAX,EAX
+;	JZ	.CON
+;	INC	ECX			;计算需分页表数。存在ECX
+;.CON:
+;	PUSH	ECX
+;	MOV	AX,SELECTOR_DATA
+;	MOV	ES,AX
+;	MOV	EDI,100000H		;目录表地址为100000H
+;	MOV	EAX,101000H		;第一个页表地址
+;	OR	EAX,P_P|P_RW
+;.1:
+;	STOSD
+;	ADD	EAX,1000H
+;	LOOP	.1			;填充页目录表
+;
+;	
+;	POP	EAX
+;	MOV	EBX,1024
+;	MUL	EBX
+;	MOV	ECX,EAX			;装载次数，因为目录表连续，所以连续装载
+;	MOV	EDI,101000H
+;	XOR	EAX,EAX
+;	MOV	EAX,P_P|P_RW
+;.2:
+;	STOSD	
+;	ADD	EAX,1000H
+;	LOOP	.2			;页表装载完成
+;
+;	MOV	EAX,100000H
+;	MOV	CR3,EAX
+;	MOV	EAX,CR0
+;	OR	EAX,80000000H
+;	MOV	CR0,EAX
+;
+;	JMP	SHORT	.3
+;
+;.3:
+;	RET

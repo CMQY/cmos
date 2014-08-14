@@ -56,7 +56,7 @@ initgdt.o :initgdt.c inc/type.h
 do_systemcall.o : do_systemcall.c
 	$(GCC32) -o $@ $<
 mem_mgr.o : mem_mgr.c
-	$(GCC32) -std=c99 -o $@ $<
+	$(GCC32)  -o $@ $<
 
 kernal.bin : $(kernal)
 	$(LD) -Ttext 0x40000 -o $@ $^
