@@ -247,7 +247,7 @@ void displaymemoryinfo(meminfo * mem)
 	print("     ");
 	printdword(mem->Type);
 	print("\n");
-	if(mem->Type!=2)
+	if(mem->Type==1)
 	{
 		memavalidsize+=mem->LengthLow;
 	}
