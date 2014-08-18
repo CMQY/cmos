@@ -225,7 +225,7 @@ b32 mempush(b32 * memblock)
 {
 	b32 *memtop=(b32*) MEMORYTOPADDR;
 	b32 * membottom=(b32*)MEMBOTTOMADDR;
-	**memblock=*memtop;
+	*memblock=*memtop;
 	*memtop=*memblock;
 	return 1;
 }
