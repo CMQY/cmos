@@ -191,8 +191,8 @@ void LinkMemory(meminfo * mem)
 		* membottom=mem->BaseAddrLow;  //衔接
 
 	for(;(b32) membottom<(mem->BaseAddrLow+mem->LengthLow);){
-		* membottom = (b32) membottom+0x1000;  //编译器处理时会进行乘4操作
-		membottom +=0x400;
+		* membottom = (b32) membottom+0x400000;  //编译器处理时会进行乘4操作
+		membottom +=0x100000;
 	}
 	* membottomaddr=(b32) membottom;     //填充回新的栈底地址
 	print("link memblock sucessfully");
@@ -233,6 +233,10 @@ b32 mempush(b32 * memblock)
 /**************************************************************************
  * 缺页中断处理函数和装载缺页中断
  *************************************************************************/
+void do_page_fault()
+{
+	
+}
 
 void displaymemoryinfo(meminfo * mem)
 {

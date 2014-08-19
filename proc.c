@@ -13,9 +13,46 @@
 #define PAGEAddr 0x600000 //界限：0x700000
 #define READYAddr 0x501100 //界限：0x502100
 #define WAITAddr 0x502100 //界限：0x503100
+
+#define WAIThead 0x503210
+#define WAITtail 0x503214
+#define READYhead 0x503220
+#define READYtail 0x503224
 void initproc()
 {
+	initlinkstack(PCBAddr,4*4);
+	initquenes();
+
 }
+
+//分页初始化函数
+//初始化分页，4M页
+//把所有分页初始化为unpresent,其余装载时决定
+//实际上是把内存清0
+b32 initpage(b32 pageaddr);
+{
+	memset(pageaddr,0x1000);
+}
+
+//阻塞和就绪队列初始化程序
+//初始化存储对头和队尾
+void initquenes()
+{
+	b32 * waithead = (b32*) WAIThead;
+	b32 * waittail = (b32*) WAITtail;
+	b32 * readyhead = (b32*) READYhead;
+	b32 * readytail = (b32*) READYtail;
+
+	*waithead=WAITAddr;
+	*waittail=WAITAddr+4;
+	*readyhead=READYAddr;
+	*readytail=READYAddr+4;
+}
+//程序装载函数
+//装载函数并跳入执行
+//需内存管理和文件系统支持
+b32 loadfile();
+{}
 
 
 
@@ -47,7 +84,7 @@ struct pcb
 //分配空间
 //装载程序，此过程填充页表
 //加入就绪队列
-void fork();
+void exce();
 
 //退出进程的系统调用
 //从队列移出
