@@ -7,6 +7,8 @@ S equ 63
 global hdread,hdwrite
 extern ltoc
 ;void hdread(b32 lba,b32 des,b32 count)
+;参数说明
+;lba为从0开始的LBA块数，des为目标内存地址，count为扇区数
 [bits 32]
 hdread:
 		push ebp
@@ -77,6 +79,9 @@ ready:
 		ret
 
 ;void hdwrite(b32 src,b32 lba,b32 bytes)
+;参数说明，src为源内存地址，lba为0开始的LBA扇区数，bytes*2 为写入单个
+;扇区字节数，注意只写入一个扇区，注意写入字节数必为偶数，bytes必须小于等
+;于256,否则出错
 hdwrite:
 		jmp $
 		push ebp
