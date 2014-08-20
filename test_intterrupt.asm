@@ -1,58 +1,39 @@
-	ORG 0x7c00
-	jmp start
-	nop
-	%include "inc/fat16head.inc"
+global hd_write
+[bits 32]
+hd_write:
+		push ebp
+		mov ebp,esp
+		push es
+		push edi
 
-message db 'test success',0
-errmesa	db 'error',0
 
-start:
-		mov ax,cs
-		mov ds,ax
-		mov ax,0B800H
-		mov es,ax
-		mov ax,0
-		mov ss,ax
-		mov sp,7c00H
-		cld
+		mov dx,1f6h
+		mov al,0a0h
+		out dx,al
+
+		mov dx,1f3h
+		mov al,2
+		out dx,al
+
+		mov dx,1f4h
+		mov al,0
+		out dx,al
+		mov dx,1f7h
+		mov al,30h
+		out dx,al
+ready:
+		in al,dx
+		test al,8
+		jz ready
+		mov cx,256
+		mov ax,31ffh
+		mov dx,1f0h
+.L:
+		out dx,ax
+		loop .L
 		
-		mov di,160
-		mov ebx,0
-.next:
-		mov eax,0E820h
-		add di,20
-		mov ecx,20
-		mov edx,0534d4150H
-		int 0x15
-		jc .err
-		cmp ebx,0
-		jz .end
-		jmp .next
+		pop edi
+		pop es
+		leave
+		ret
 
-.end:	
-		xor di,di
-		mov si,message
-.next2:	lodsb 
-		cmp al,0
-		jz .end2
-		stosb
-		mov byte [es:di],02
-		inc di
-		jmp .next
-
-.end2:
-		jmp $
-
-.err:	
-		mov di,360
-		mov si,errmesa
-.next3:	lodsb 
-		cmp al,0
-		jz .end2
-		stosb
-		mov byte [es:di],02
-		inc di
-		jmp .next3 
-
-	times 510-($-$$) db 0
-		dw 0xAA55

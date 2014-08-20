@@ -25,7 +25,7 @@ void initidt();
 void set_tss();
 void setgdt();
 void memmgr();
-
+void hd_write();
 typedef struct _gdtr{
 	b16 gdtlimit;
 	b32 gdtrbase;
@@ -63,6 +63,8 @@ void _start()
 	memmgr();
 	print("memory have been control\n");
 
+	hdread(1,0x700000,1);
+	hdwrite(0x700000,7,256);
 	asm volatile(
 		"int $80\n\t"
 		:::

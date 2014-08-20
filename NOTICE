@@ -10,3 +10,8 @@ FS	固定为视屏段	基址为0B800H
 
 
 规定，除CS，SS外，DS，GS，FS使用前必须赋值。
+
+
+U.img信息：
+CHS=20/16/63
+ata0-master:type=disk,path="U.img",mode=flat
