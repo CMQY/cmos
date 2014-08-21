@@ -18,11 +18,37 @@
 #define WAITtail 0x503214
 #define READYhead 0x503220
 #define READYtail 0x503224
+
+//进程状态
+#define RAEDY 1
+#define BUSY 2
+#define RUN 0
+
+//PID地址
+#define PID 0x503228
+
+//存放当前运行的程序的pcb地址
+#define CURPCB 0x503230
+
 void initproc()
 {
 	initlinkstack(PCBAddr,4*4);
 	initquenes();
+	addgdt();//添加用户GDT，所有用户进程使用同一类GDT选择子
+	*(b32 *)PID=0; //初始化PID池
+	*(b32 *)CURPCB=0; //初始化当前PCB存储
+}
 
+void addgdt()
+{
+	loaddescriptor(6,0,0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL3 | DA_DRW ,0xFFFF);
+	//user_data
+	loaddescriptor(7,0,0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL3 | DA_DRW ,0xFFFF);
+	//user_stack
+	loaddescriptor(8,0,0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL3 | DA_CCOR,0xFFFF);
+	//user_code
+	loaddesctiptor(9,0xB8000,0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL3 | DA_DRW,0xFFFF);
+	//user_vedio
 }
 
 //分页初始化函数
@@ -62,7 +88,52 @@ b32 loadfile();
 //填充保存进程控制块内容
 //从将当前程序挂入就绪链表或挂起链表
 //从就绪链表中取出程序，无则循环检测
-void dispatcher();
+void dispatcher()
+{
+	asm volatile(
+			"cli \n\t"
+			"push eax \n\t"
+			"push ebx \n\t"
+			"push ecx \n\t"
+			"push edx \n\t"
+			"push ebp \n\t"
+			"push esi \n\t"
+			"push edi \n\t"
+			"push ds \n\t"
+			"push es \n\t"
+			"push fs \n\t"
+			"push gs \n\t"
+			"pushf \n\t"
+			:::
+			);
+	
+	asm volatile(
+			"movl CURPCB,%%eax \n\t"
+			"movl %%esp,(%%eax) \n\t"
+			"movl $READY,$4(%%eax) \n\t"
+			"movl %%cr3,$8(%%eax) \n\t"
+			:::
+			);
+
+
+	asm volatile(
+			"popf \n\t"
+			"pop gs \n\t"
+			"pop fs \n\t"
+			"pop es \n\t"
+			"pop ds \n\t"
+			"pop edi \n\t"
+			"pop esi \n\t"
+			"pop ebp \n\t"
+			"pop edx \n\t"
+			"pop ecx \n\t"
+			"pop ebx \n\t"
+			"pop eax \n\t"
+			"sti \n\t"
+			"iret \n\t"
+			:::
+			);
+}
 
 //进程控制块内容
 //CPU环境上下文-->保存在堆栈，包括各寄存器
@@ -70,12 +141,12 @@ void dispatcher();
 //运行状态
 //CR3
 //已使用的内存空间-->由缺页中断和虚拟内存管理程序维护
-struct pcb
+struct PCB
 {
 	b32 esp;
 	b32 status;
 	b32 CR3;
-	b32 *page;    //页表结构，使用4M页
+	b32 pid;    //页表结构，使用4M页
 }
 
 
@@ -84,11 +155,30 @@ struct pcb
 //分配空间
 //装载程序，此过程填充页表
 //加入就绪队列
-void exce();
+//
+//define READY 1
+//define BUSY 2
+//define RUN 0
+void exce()
+{
+	b32 pcb_;		//存放PCB地址
+	b32 page;		//存放PAGE地址
+	procpop(&pcb_);	//获取PCB地址
+	getpageaddr(PCBAddr,pcb_,16,&page);	//获取PAGE地址
+	PCB * pcb=(PCB *)pcb_;
+	pcb->esp=0x3FFFF0;
+	pcb->status=READY;
+	pcb->CR3=page;
+	pcb->pid=*(b32 *)PID+4;			//填充PCB
+	*(b32 *)PID+=4;
+
+	loadfile();				//装载程序
+	changerinand exe		//加入就绪队列
+
+}
 
 //退出进程的系统调用
 //从队列移出
 //回收空间，使用遍历页表的形式
 void exit();
 
-//

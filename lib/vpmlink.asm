@@ -1,6 +1,7 @@
 ;FILENAME : vpmlink.asm
 ;FUNCTION : 链接虚拟页和物理页,提供：void vpmlink(b32 vmaddr)函数
-
+extern mempop
+global vpmlink
 [bits 32]
 vpmlink:
 		push ebp
