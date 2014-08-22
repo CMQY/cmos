@@ -36,11 +36,11 @@ void loaddescriptor();
 void set_tss()
 {
 	tss *tssaddr=(tss *)TSSADDR;
-	tssaddr->esp0=0xBB00;
+	tssaddr->esp0=0;
 	tssaddr->ss0=0;
-	tssaddr->esp0=0xBB00;
+	tssaddr->esp0=0;
 	tssaddr->ss0=0;
-	tssaddr->esp0=0xBB00;
+	tssaddr->esp0=0;
 	tssaddr->ss0=0;
 	tssaddr->cr3=0x100000;
 	tssaddr->ldt=0;

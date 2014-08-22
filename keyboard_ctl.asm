@@ -33,6 +33,7 @@ message1	db	'read key successaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 [SECTION .CODE32]
 extern printdword
 extern printbyte
+extern key_handle
 
 global do_keyboard
 do_keyboard:
@@ -43,7 +44,7 @@ do_keyboard:
 			
 			xor eax,eax	;存放扫描码
 			in	al,0x60
-			call key_handle	;处理扫描码
+			call key_handle1	;处理扫描码
 
 ;key_reset:
 ;			in al,0x61  ;使用8255A对8042进行复位
@@ -65,8 +66,8 @@ do_keyboard:
 			ret
 
 
-key_handle:
+key_handle1:
 			push eax
-			call printbyte
+			call key_handle
 			add esp,4
 			ret

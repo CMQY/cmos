@@ -14,6 +14,8 @@
 #define READYAddr 0x501100 //界限：0x502100
 #define WAITAddr 0x502100 //界限：0x503100
 
+#define READYBottom 0x502100
+#define WAITBottom 0x503100
 #define WAIThead 0x503210
 #define WAITtail 0x503214
 #define READYhead 0x503220
@@ -107,14 +109,33 @@ void dispatcher()
 			:::
 			);
 	
-	asm volatile(
+	asm volatile(							//保存PCB
 			"movl CURPCB,%%eax \n\t"
-			"movl %%esp,(%%eax) \n\t"
-			"movl $READY,$4(%%eax) \n\t"
-			"movl %%cr3,$8(%%eax) \n\t"
-			:::
+			"movl %%esp,(%%eax) \n\t"		//pcb->esp
+			"movl $READY,$4(%%eax) \n\t"	//pcb->status
+			"movl %%cr3,$8(%%eax) \n\t"		//pcb->cr3
+			:::"eax"
 			);
+	
+	//pcb加入就绪队列
+	b32 * pcbaddr=(b32 *)CURPCB;
+	quenein(READYAddr,READYBottom,RAEDYhead,READYtail,*pcbaddr);
+	
+	//获取下一就绪进程
+	
+	PCB * nextpcb;
+	queneout(READYAddr,READYBottom,RAEDYhead,READYtail,&nextpcb);
 
+	//修改当前CURPCB,修改pcb->status，切换分页，切换堆栈
+	nextpcb->status=RUN;
+	*pcbaddr=nextpcb;
+
+	asd volatile(
+			"movl nextpcb,%%eax \n\t"
+			"movl (%%eax),%%esp \n\t"
+			"movl $8(%%eax),%%cr3 \n\t"
+			::"m"(nextpcb):"eax"
+			);
 
 	asm volatile(
 			"popf \n\t"

@@ -26,6 +26,8 @@ void set_tss();
 void setgdt();
 void memmgr();
 void hd_write();
+void initkeyquene();
+
 typedef struct _gdtr{
 	b16 gdtlimit;
 	b32 gdtrbase;
@@ -56,7 +58,7 @@ void _start()
 	print("tss load successfully.\n");
 
 
-
+	initkeyquene();//初始化键盘缓冲区
 	initidt();      //设置IDT并加载中断
 	print("IDTR load successfully.\n");
 

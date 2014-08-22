@@ -83,7 +83,6 @@ ready:
 ;扇区字节数，注意只写入一个扇区，注意写入字节数必为偶数，bytes必须小于等
 ;于256,否则出错
 hdwrite:
-		jmp $
 		push ebp
 		mov ebp,esp
 		push esi
