@@ -1,0 +1,101 @@
+"ESC"1
+"1"2
+"2"3
+"3"4
+"4"5
+"5"6
+"6"7
+"7"8
+"8"9
+"Q"10
+"W"11
+"E"12
+"R"13
+"T"14
+"Y"15
+"U"16
+"I"17
+"O"18
+"P"19
+"D"20
+"F"21
+"G"22
+"H"23
+"J"24
+"K"25
+"L"26
+";"27
+"'"28
+"`"29
+"B"30
+"N"31
+"M"32
+","33
+"."34
+"/"35
+"R SHFT"36
+"KP *"37
+"L ALT"38
+"SPACE"39
+"F6"40
+"F7"41
+"F8"42
+"F9"43
+"F10"44
+"NUM"45
+"KP 7"47
+"KP 8"48
+"KP 9"49
+"KP 2"50
+"KP 3"51
+"KP 0"52
+"KP ."53
+"F11"57
+"F12"58
+"9"0A
+"0"0B
+"-"0C
+"="0D
+"BKSP"0E
+"TAB"0F
+"["1A
+"]"1B
+"ENTER"1C
+"L CTRL"1D
+"A"1E
+"S"1F
+"L SHFT"2A
+"\"2B
+"Z"2C
+"X"2D
+"C"2E
+"V"2F
+"CAPS"3A
+"F1"3B
+"F2"3C
+"F3"3D
+"F4"3E
+"F5"3F
+"KP -"4A
+"KP 4"4B
+"KP 5"4C
+"KP 6"4D
+"KP +"4E
+"KP 1"4F
+"KP EN"E0,1C
+"R CTRL"E0,1D
+"KP /"E0,35
+"R ALT"E0,38
+"HOME"E0,47
+"U ARROW"E0,48
+"PG UP"E0,49
+"L ARROW"E0,4B
+"R ARROW"E0,4D
+"END"E0,4F
+"D ARROW"E0,50
+"PG DN"E0,51
+"INSERT"E0,52
+"DELETE"E0,53
+"L GUI"E0,5B
+"R GUI"E0,5C
+"APPS"E0,5D
