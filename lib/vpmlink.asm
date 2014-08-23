@@ -23,6 +23,7 @@ vpmlink:
 		add esp,4
 		pop eax
 		mov ebx,[ebp-4]
+		or ebx,000010000111b   ;4M页属性
 		mov [eax],ebx
 
 		pop ebx

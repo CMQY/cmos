@@ -96,9 +96,9 @@ void initproc()
 	readfile(&filename,phymem);
 	linkpage(pcb->CR3,0x1000000,phymem);// 处理页表
 	asm volatile(
-			"movl %0,%%cr3\n\t"
+			"movl %%cr3,%0"
 			"push $user_code \n\t"//处理堆栈
-			"push $0 \n\t"
+			"push 0 \n\t"
 			"iret \n\t"
 			::"m"(page):
 			);
@@ -270,3 +270,4 @@ void exce()
 //从队列移出
 //回收空间，使用遍历页表的形式
 void exit();
+

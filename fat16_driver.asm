@@ -1,13 +1,13 @@
-/************************************************************************
- * FAT16文件系统驱动
- * 硬编码fat扇区数和地址及根目录扇区数和地址，需要时再修改
- ************************************************************************/
+;/************************************************************************
+; * FAT16文件系统驱动
+; * 硬编码fat扇区数和地址及根目录扇区数和地址，需要时再修改
+; ************************************************************************/
 
-#define ROOTADDR 159		//79.5 K
-#define ROOTNUM 32			//16 K
-
-#define TEMPROOTSECTION 0x700000
-#define TEMPFATSECTION 0x700200
+;#define ROOTADDR 159		//79.5 K
+;#define ROOTNUM 32			//16 K
+;
+;#define TEMPROOTSECTION 0x700000
+;#define TEMPFATSECTION 0x700200
 ROOTADDR equ 0x503300   ;值159   存放根目录扇区地址
 ROOTNUM  equ 0x503304	;值 32   存放根目录数	
 
@@ -15,16 +15,22 @@ TEMPROOTSECTION equ 0x700000
 TEMPFATSECTION  eau 0x700200
 
 DATA equ 191  ;数据开始的山区
-//void readfile(b8 *filename)
+;//void readfile(b32 *filename,b32 desaddr)
+
+global readfile
 
 readfile:
 		push ebp
 		mov ebp,esp
+		push ebx
+		push esi
+		push edi
 .nextread:
 		push 1
 		push TEMPROOTSECTION
 		push [ROOTADDR]
 		call hdread
+		add esp,0xc
 
 		mov eax,ROOTADDR
 		mov [eax],159
@@ -61,7 +67,7 @@ readfile:
 		jmp .nextread
 
 .notfind:
-		mov eax
+		mov eax ,0
 		jmp .end
 
 .found:
@@ -69,13 +75,51 @@ readfile:
 		add edi,0x1A
 		mov ebx,[edi]
 .nextfat:
-		mov eax,ebx
+		push ebx			;保存fat值用于读取下一个fat
 		add ebx,DATA
 		
 		push 1
-		push TEMPFATADDR
+		push [ebp+0xc]
 		push ebx
 		call hdread
+		add esp,0xc
+		
+		pop eax
+		call getnextfat   ;ebx 低16位返回下一fat值
+		mov  dx,0xFFEF
+		cmp bx,dx
+		ja .readend
+		add dword [ebp+0xc],0x200
+		jmp .nextfat
+.readend:
+		mov eax,1
+.end:	
+		pop edi
+		pop esi
+		pop ebx
+		leave
+		ret		
 
-		call getnextfat
-		mov 
+
+getnextfat:
+		push ebp
+		mov ebp,esp
+		push edi
+
+		xor edx,edx
+		shl eax,1
+		mov ebx 512
+		div ebx
+		inc eax
+		push edx
+		push 1
+		push TEMPFATADDR
+		push eax
+		call hdread
+		add esp,0xc
+		pop edi
+		mov bx,[edi+TEMPFATADDR]
+		
+		pop edi
+		leave
+		ret

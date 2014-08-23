@@ -6,7 +6,7 @@ LD86	=	ld86 -T 0
 
 
 everything	=	boot.bin loader.bin kernal.bin 
-kernal		=	kernal.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o keyboard_ctl.o lib/printbin.o lib/scrollscreen.o do_systemcall.o mem_mgr.o lib/hd_drive.o lib/lbatochs.o key_handle.o
+kernal		=	kernal.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o keyboard_ctl.o lib/printbin.o lib/scrollscreen.o do_systemcall.o mem_mgr.o lib/hd_drive.o lib/lbatochs.o key_handle.o proc.o fat16_driver.o proc_link_stack.o quene.o
 boot.bin : boot.asm inc/fat16head.inc
 	nasm -o $@ $<
 loader.bin : loader.asm inc/loader.inc
@@ -72,3 +72,13 @@ kernal.bin : $(kernal)
 
 clean : 
 	rm $(everything)
+
+proc.o : proc.c
+	$(GCC32) -o $@ $<
+quene.o : quene.c
+	$(GCC32) -o $@ $<
+proc_link_stack.o : proc_link_stack.c
+	$(GCC32) -o $@ $<
+fat16_driver.o : fat16_driver.asm
+	$(GCC32) -o $@ $<
+
