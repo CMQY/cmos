@@ -52,7 +52,8 @@ void hdraed(b32,b32,b32);  //in lib/hd_drive.asm
 void hdwrite(b32,b32,b32);
 
 void readfile(b8 *,b32);  //in fat16_driver.asm
-
+void loaddescriptor(int,b32,b16,b16);
+void memset(b32,b32);
 b32 initpage(b32);
 
 //进程控制块内容
@@ -75,16 +76,20 @@ void initproc()
 	initquenes();
 	addgdt();//添加用户GDT，所有用户进程使用同一类GDT选择子
 	*(b32 *)PID=0; //初始化PID池
-	*(b32 *)CURPCB=0; //初始化当前PCB存储
 
 	//添加第一进程
 	b32 pcb_;
 	b32 page;
 	procpop(&pcb_);
+	*(b32 *)CURPCB=pcb_;   //初始化当前PCB
+/*	asm volatile(
+			"jmp . \n\t"
+			:::
+			);   */
 	getpageaddr(PCBAddr,pcb_,16,&page);
 	initpage(page);     //初始化分页，平坦映射内核空间
 	PCB * pcb=(PCB *)pcb_;
-	pcb->esp=0x3FFFF0;
+	pcb->esp=0x13FFFF0;
 	pcb->status=RUN;
 	pcb->CR3=page;
 	pcb->pid=*(b32 *)PID+4;
@@ -96,11 +101,15 @@ void initproc()
 	readfile(&filename,phymem);
 	linkpage(pcb->CR3,0x1000000,phymem);// 处理页表
 	asm volatile(
+			"jmp . \n\t"
+			"movl %%cr4,%%eax \n\t"
+			"or $0x10,%%eax \n\t"
+			"movl %%eax,%%cr4 \n\t"      //修改cr4.pse
 			"movl %0,%%cr3\n\t"
-			"push $user_code \n\t"//处理堆栈
+			"push $0x40 \n\t"//处理堆栈 user_code
 			"push $0 \n\t"
 			"iret \n\t"
-			::"m"(page):
+			::"r"(page):"%eax"
 			);
 
 }
@@ -124,7 +133,7 @@ void addgdt()
 	//user_stack
 	loaddescriptor(8,0,0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL3 | DA_CCOR,0xFFFF);
 	//user_code
-	loaddesctiptor(9,0xB8000,0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL3 | DA_DRW,0xFFFF);
+	loaddescriptor(9,0xB8000,0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL3 | DA_DRW,0xFFFF);
 	//user_vedio
 }
 
@@ -136,9 +145,9 @@ b32 initpage(b32 pageaddr_)
 	memset(pageaddr_,0x1000);
 	b32 * pageaddr=(b32 *) pageaddr_;
 	b32 size=0;
-	for(;size<0x1000000;size+=400000){
+	for(;size<0x1000000;size+=0x400000){
 		*pageaddr=size | 0x83;
-		pageaddr+=0x100000;   //编译器*4
+		pageaddr+=0x1;   //编译器*4
 	}		
 }
 
@@ -170,6 +179,7 @@ b32 loadfile()
 //填充保存进程控制块内容
 //从将当前程序挂入就绪链表或挂起链表
 //从就绪链表中取出程序，无则循环检测
+/*
 void dispatcher()
 {
 	asm volatile(
@@ -192,13 +202,14 @@ void dispatcher()
 	asm volatile(							//保存PCB
 			"movl CURPCB,%%eax \n\t"
 			"movl %%esp,(%%eax) \n\t"		//pcb->esp
-			"movl $READY,$4(%%eax) \n\t"	//pcb->status
-			"movl %%cr3,$8(%%eax) \n\t"		//pcb->cr3
-			:::"eax"
+//			"movl $1,4(%%eax) \n\t"	//pcb->status  READY = 1
+			"movl %%cr3,8(%%eax) \n\t"		//pcb->cr3
+			:::"%eax"
 			);
 	
 	//pcb加入就绪队列
 	b32 * pcbaddr=(b32 *)CURPCB;
+	((PCB *)* pcbaddr)->status=READY;
 	quenein(READYAddr,READYBottom,READYhead,READYtail,*pcbaddr);
 	
 	//获取下一就绪进程
@@ -211,10 +222,10 @@ void dispatcher()
 	*pcbaddr=nextpcb;
 
 	asm volatile(
-			"movl nextpcb,%%eax \n\t"
+			"movl %0,%%eax \n\t"
 			"movl (%%eax),%%esp \n\t"
-			"movl $8(%%eax),%%cr3 \n\t"
-			::"m"(nextpcb):"eax"
+			"movl 8(%%eax),%%cr3 \n\t"
+			::"r"((b32)nextpcb):"%eax","%esp"
 			);
 
 	asm volatile(
@@ -235,7 +246,7 @@ void dispatcher()
 			:::
 			);
 }
-
+*/
 
 
 

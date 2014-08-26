@@ -12,11 +12,11 @@ ROOTADDR equ 0x503300   ;值159   存放根目录扇区地址
 ROOTNUM  equ 0x503304	;值 32   存放根目录数	
 
 TEMPROOTSECTION equ 0x700000
-TEMPFATSECTION  eau 0x700200
+TEMPFATSECTION  equ 0x700200
 
 DATA equ 191  ;数据开始的山区
 ;//void readfile(b32 *filename,b32 desaddr)
-
+extern hdread
 global readfile
 
 readfile:
@@ -25,17 +25,18 @@ readfile:
 		push ebx
 		push esi
 		push edi
+		
+        mov eax,ROOTADDR
+        mov dword [eax],159
+        mov eax,ROOTNUM
+        mov dword [eax],32
+
 .nextread:
 		push 1
 		push TEMPROOTSECTION
-		push [ROOTADDR]
+		push dword [ROOTADDR]
 		call hdread
 		add esp,0xc
-
-		mov eax,ROOTADDR
-		mov [eax],159
-		mov eax,ROOTNUM
-		mov [eax],32
 
 		mov edx,0x10
 		cld
@@ -78,8 +79,8 @@ readfile:
 		push ebx			;保存fat值用于读取下一个fat
 		add ebx,DATA
 		
-		push 1
-		push [ebp+0xc]
+		push dword 1
+		push dword [ebp+0xc]
 		push ebx
 		call hdread
 		add esp,0xc
@@ -108,17 +109,17 @@ getnextfat:
 
 		xor edx,edx
 		shl eax,1
-		mov ebx 512
+		mov ebx,512
 		div ebx
 		inc eax
 		push edx
 		push 1
-		push TEMPFATADDR
+		push TEMPFATSECTION
 		push eax
 		call hdread
 		add esp,0xc
 		pop edi
-		mov bx,[edi+TEMPFATADDR]
+		mov bx,[edi+TEMPFATSECTION]
 		
 		pop edi
 		leave

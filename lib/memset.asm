@@ -10,7 +10,7 @@ memset:
 	push ecx
 
 	mov edi,[ebp+8]
-	mov ecx,[ebp+c]
+	mov ecx,[ebp+0xc]
 	mov al,0
 	cld
 .L:

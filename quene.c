@@ -2,6 +2,7 @@
  * FILENAME : quene.h
  * FUNCTION : 通用32bits队列
  *************************************************************************/
+#include "inc/type.h"
 b32 add4(b32,b32,b32);
 b32 quenein(b32 top_,b32 bottom_,b32 front_,b32 back_,b32 elemt_ )
 {

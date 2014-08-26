@@ -80,7 +80,7 @@ b32 keyout(b8 * key)
 	b32 *front=(b32 *)KEYFRONT;
 	b32 *back =(b32 *)KEYBACK;
 	b32 addr=add(*front);
-	if(addr = *back)
+	if(addr == *back)
 		return 0;
 	else{
 		b8 *temp=(b8 *)addr;

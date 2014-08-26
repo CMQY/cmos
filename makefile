@@ -1,12 +1,12 @@
 NASM32		=	nasm -f elf
-GCC32		=	gcc -c -m32 -fno-builtin
+GCC32		=	gcc -c -m32 -fno-builtin -W
 AS32		=	as -32
 LD		=	ld -m elf_i386 -static
 LD86	=	ld86 -T 0
 
 
 everything	=	boot.bin loader.bin kernal.bin 
-kernal		=	kernal.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o keyboard_ctl.o lib/printbin.o lib/scrollscreen.o do_systemcall.o mem_mgr.o lib/hd_drive.o lib/lbatochs.o key_handle.o proc.o fat16_driver.o proc_link_stack.o quene.o
+kernal		=	kernal.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o keyboard_ctl.o lib/printbin.o lib/scrollscreen.o do_systemcall.o mem_mgr.o lib/hd_drive.o lib/lbatochs.o key_handle.o proc.o fat16_driver.o proc_link_stack.o quene.o lib/memset.o
 boot.bin : boot.asm inc/fat16head.inc
 	nasm -o $@ $<
 loader.bin : loader.asm inc/loader.inc
@@ -33,6 +33,8 @@ lib/hd_drive.o : lib/hd_drive.asm
 	$(NASM32) -o $@ $<
 lib/lbatochs.o : lib/lbatochs.c
 	$(GCC32) -o $@ $<
+lib/memset.o : lib/memset.asm
+	$(NASM32) -o $@ $<
 
 #test_intterrupt.o : test_intterrupt.asm
 #	$(NASM32) -o $@ $<
@@ -80,5 +82,5 @@ quene.o : quene.c
 proc_link_stack.o : proc_link_stack.c
 	$(GCC32) -o $@ $<
 fat16_driver.o : fat16_driver.asm
-	$(GCC32) -o $@ $<
+	$(NASM32) -o $@ $<
 

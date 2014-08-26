@@ -6,6 +6,7 @@
 //PROCSTACKTOP
 //PROCSTACKBOTTOM
 //
+#include "inc/type.h"
 #define PROCSTACKTOP 0x503200
 #define PROCSTACKBOTTOM 0x503204
 #define PROCBLOCKCONUT 0x503208  //存放已使用控制块数量
