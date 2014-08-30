@@ -76,7 +76,7 @@ void do_coprocessor_error()
 {
 	readkey();    //link keyboard_ctl.asm
 } */
-void do_timer()
-{
-	print("#time ahahaha\n");
-}
+//void do_timer()
+//{
+//	print("#time ahahaha\n");
+//}

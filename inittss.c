@@ -36,12 +36,12 @@ void loaddescriptor();
 void set_tss()
 {
 	tss *tssaddr=(tss *)TSSADDR;
-	tssaddr->esp0=0;
-	tssaddr->ss0=0;
-	tssaddr->esp0=0;
-	tssaddr->ss0=0;
-	tssaddr->esp0=0;
-	tssaddr->ss0=0;
+	tssaddr->esp0=0xBB00;
+	tssaddr->ss0=selector_stack;
+	tssaddr->esp2=0x10FFFE0;
+	tssaddr->ss2=selector_stack;
+	tssaddr->esp1=0;
+	tssaddr->ss1=0;
 	tssaddr->cr3=0x100000;
 	tssaddr->ldt=0;
 	b32 io_map=TSSADDR+0x64;

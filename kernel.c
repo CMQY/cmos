@@ -64,10 +64,14 @@ void _start()
 
 	memmgr();
 	print("memory have been control\n");
-
+	
+	b8 str[]="systemcall test\n";
 	asm volatile(
+		"push $3 \n\t"
+		"push %0 \n\t"
+		"push $3 \n\t"
 		"int $80\n\t"
-		:::
+		::"r"(&str):
 		);
 	initproc();
 	exit();

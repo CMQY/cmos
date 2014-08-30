@@ -1,6 +1,8 @@
 #include"inc/type.h"
 #define IDTADDR 0x1C200
 #define IDTLIMIT 0x800
+
+#define PROCLOCK 0x503300
 /***********************************************************************************
 ÖÐ¶Ï³õÊŒ»¯³ÌÐò¡£
 ÖÐ¶ÏÏòÁ¿±í·ÅÔÚ0x1C200H¡£
@@ -102,7 +104,7 @@ void initidt()
 ******************************************************************************/
 	idtload(32, (b32) &int_32_timer, DA_386IGate);
 	idtload(33, (b32) &int_33_keyboard, DA_386IGate);
-	idtload(80, (b32) &int_80_systemcall, DA_386IGate);
+	idtload(80, (b32) &int_80_systemcall, DA_386IGate | 0x3);  //向内层堆栈复制3个参数
 
 
 
@@ -112,6 +114,10 @@ void initidt()
 	b32 base = IDTADDR;
 	b32 limit = IDTLIMIT;
 	lidt(base, limit);
+
+//初始化程序调度锁，清空PROCLOCK
+	b32 * proclock=(b32 *) PROCLOCK;
+	*proclock=0;
 
 
 /******************************************************************
@@ -154,7 +160,7 @@ void initidt()
 	"outb	%%al,$0xa1 \n\t"		
 	".word	0x00eb,0x00eb \n\t"
 
-	"movb	$0xfd,%%al \n\t"		//允许键盘中断
+	"movb	$0xfc,%%al \n\t"		//允许键盘中断
 	"outb	%%al,$0x21 \n\t"
 	".word	0x00eb,0x00eb \n\t"
 

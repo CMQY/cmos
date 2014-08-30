@@ -27,8 +27,6 @@ keyq_size	equ 10h		;键盘队列大小，暂定
 ;read the key and use 8255A to reset the 8042
 
 
-[SECTION .DATA]
-message1	db	'read key successaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',0
 
 [SECTION .CODE32]
 extern printdword

@@ -92,10 +92,14 @@ void initproc()
 	pcb->esp=0x13FFFF0;
 	pcb->status=RUN;
 	pcb->CR3=page;
-	pcb->pid=*(b32 *)PID+4;
-	*(b32 *)PID+=4;
+	pcb->pid=(*(b32 *)PID)+4;
+	*(b32 *)PID=*(b32 *)PID+4;
 	b32 phymem;
-	b8 filename[11]="program bin";
+	b8 filename[11]="PROGRAM BIN";
+    asm volatile(
+			"jmp . \n\t"
+			:::
+			);
 	mempop(&phymem);
 
 	readfile(&filename,phymem);
@@ -110,7 +114,7 @@ void initproc()
 			"push $0xffffe \n\t"
 			"push $0x43 \n\t"//处理堆栈 user_code
 
-			"push $0 \n\t"
+			"push $0x1000000 \n\t"
 			"retf \n\t"
 			::"r"(page):"%eax"
 			);

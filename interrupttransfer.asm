@@ -29,15 +29,13 @@
 extern	do_div_invalid,do_debug,do_nmi_interrupt,do_breakpoint,do_overflow,do_bounds_check
 extern	do_invalid_opcode,do_device_unexit,do_double_error,do_coprocessor_seg_error
 extern	do_invalid_tss,do_seg_dispresent,do_stack_error,do_general_protection,do_page_fault
-extern	do_reserved,do_coprocessor_error,do_timer,do_keyboard
-extern	do_systemcall
+extern	do_reserved,do_coprocessor_error,do_keyboard
 
 
 global	int_0_div_invalid,int_1_debug,int_2_nmi_interrupt,int_3_breakpoint,int_4_overflow,int_5_bounds_check
 global	int_6_invalid_opcode,int_7_device_unexit,int_8_double_error,int_9_coprocessor_seg_error
 global	int_10_invalid_tss,int_11_seg_dispresent,int_12_stack_error,int_13_general_protection,int_14_page_fault
-global	int_15_reserved,int_16_coprocessor_error,int_32_timer,int_33_keyboard
-global	int_80_systemcall
+global	int_15_reserved,int_16_coprocessor_error,int_33_keyboard
 
 ;----------------------------------------------------------------------
 ;处理函数在interrupt.c中定义
@@ -125,20 +123,16 @@ int_16_coprocessor_error:
 ;------------------------------------------------------------
 ;外部中断服务
 ;-----------------------------------------------------------
-int_32_timer:	;时钟中断
-	push	0;
-	push	do_timer
-	jmp	interrupt_server_route
+;int_32_timer:	;时钟中断
+;	push	0;
+;	push	do_timer
+;	jmp	interrupt_server_route
 
 int_33_keyboard:	;键盘中断
 	push	0;
 	push	do_keyboard
 	jmp	interrupt_server_route
 
-int_80_systemcall:
-	push	0;
-	push	do_systemcall
-	jmp interrupt_server_route
 ;--------------------------------------------------------
 ;interrupt_server_route
 ;

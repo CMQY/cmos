@@ -1,5 +1,7 @@
 ;时钟中断
 
+extern dispatcher
+
 CURPCB equ 0x503230
 RAEDY equ 0x1
 dispatcher:

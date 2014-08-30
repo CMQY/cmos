@@ -53,7 +53,7 @@ void initkeyquene()
 	b32 * front=(b32 *)KEYFRONT;
 	b32 * back=(b32 *)KEYBACK;
 	*front=KEYADDR;
-	*back =KEYADDR + 4;
+	*back =KEYADDR + 1;
 }
 
 b32 keyin(b8 key)
