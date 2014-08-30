@@ -106,9 +106,12 @@ void initproc()
 			"or $0x10,%%eax \n\t"
 			"movl %%eax,%%cr4 \n\t"      //修改cr4.pse
 			"movl %0,%%cr3\n\t"
-			"push $0x40 \n\t"//处理堆栈 user_code
+			"push $0x3b \n\t"
+			"push $0xffffe \n\t"
+			"push $0x43 \n\t"//处理堆栈 user_code
+
 			"push $0 \n\t"
-			"iret \n\t"
+			"retf \n\t"
 			::"r"(page):"%eax"
 			);
 

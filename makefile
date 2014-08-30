@@ -5,15 +5,15 @@ LD		=	ld -m elf_i386 -static
 LD86	=	ld86 -T 0
 
 
-everything	=	boot.bin loader.bin kernal.bin 
-kernal		=	kernal.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o keyboard_ctl.o lib/printbin.o lib/scrollscreen.o do_systemcall.o mem_mgr.o lib/hd_drive.o lib/lbatochs.o key_handle.o proc.o fat16_driver.o proc_link_stack.o quene.o lib/memset.o
+everything	=	boot.bin loader.bin kernel.bin 
+kernel		=	kernel.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o keyboard_ctl.o lib/printbin.o lib/scrollscreen.o do_systemcall.o mem_mgr.o lib/hd_drive.o lib/lbatochs.o key_handle.o proc.o fat16_driver.o proc_link_stack.o quene.o lib/memset.o
 boot.bin : boot.asm inc/fat16head.inc
 	nasm -o $@ $<
 loader.bin : loader.asm inc/loader.inc
 	nasm -o $@ $<
 
 
-# kernal.bin : kernal.asm inc/kernal.inc
+# kernal.bin : kernel.asm inc/kernal.inc
 # 	nasm -o $@ $<
 
 lib/disbin.o : lib/disbin.asm
@@ -38,15 +38,15 @@ lib/memset.o : lib/memset.asm
 
 #test_intterrupt.o : test_intterrupt.asm
 #	$(NASM32) -o $@ $<
-build : boot.bin loader.bin kernal.bin
+build : boot.bin loader.bin kernel.bin
 	dd if=boot.bin of=boot.img bs=512 conv=notrunc count=1
 	mount boot.img /mnt
 	cp loader.bin /mnt
-	cp kernal.bin /mnt
+	cp kernel.bin /mnt
 	umount /mnt
 	rm *.bin *.o lib/*.o
 
-kernal.o : kernal.c inc/type.h
+kernel.o : kernel.c inc/type.h
 	$(GCC32) -o $@ $<
 interrupt.o : interrupt.c inc/type.h
 	$(GCC32) -o $@ $<
@@ -69,7 +69,7 @@ do_systemcall.o : do_systemcall.c
 mem_mgr.o : mem_mgr.c
 	$(GCC32)  -o $@ $<
 
-kernal.bin : $(kernal)
+kernel.bin : $(kernel)
 	$(LD) -Ttext 0x40000 -o $@ $^
 
 clean : 
