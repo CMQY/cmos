@@ -84,3 +84,7 @@ proc_link_stack.o : proc_link_stack.c
 fat16_driver.o : fat16_driver.asm
 	$(NASM32) -o $@ $<
 
+int_80_systemcall.o :int_80_systemcall.asm
+	$(NASM32) -o $@ $<
+program.o : console.c
+	nasm -o $@ $<

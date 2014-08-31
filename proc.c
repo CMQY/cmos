@@ -60,14 +60,32 @@ b32 initpage(b32);
 //CPU环境上下文-->保存在堆栈，包括各寄存器
 //堆栈地址
 //运行状态
-//CR3
+//cr3
 //已使用的内存空间-->由缺页中断和虚拟内存管理程序维护
 typedef struct
 {
-      b32 esp;
-      b32 status;
-      b32 CR3;
-      b32 pid;    //页表结构，使用4M页
+		b32 esp0;
+		b32 ss0;
+		b32 cr3;
+		b32 eip;
+		b32 eflags;
+		b32 eax;
+		b32 ecx;
+		b32 edx;
+		b32 ebx;
+		b32 esp;
+		b32 ebp;
+		b32 esi;
+		b32 edi;
+		b32 es;
+		b32 cs;
+		b32 ss;
+		b32 ds;
+		b32 fs;
+		b32 gs;
+		b32 esp;
+		b32 status;
+		b32 pid;    //页表结构，使用4M页
 } PCB;
 
 void initproc()
@@ -91,7 +109,7 @@ void initproc()
 	PCB * pcb=(PCB *)pcb_;
 	pcb->esp=0x13FFFF0;
 	pcb->status=RUN;
-	pcb->CR3=page;
+	pcb->cr3=page;
 	pcb->pid=(*(b32 *)PID)+4;
 	*(b32 *)PID=*(b32 *)PID+4;
 	b32 phymem;
@@ -103,7 +121,7 @@ void initproc()
 	mempop(&phymem);
 
 	readfile(&filename,phymem);
-	linkpage(pcb->CR3,0x1000000,phymem);// 处理页表
+	linkpage(pcb->cr3,0x1000000,phymem);// 处理页表
 	asm volatile(
 			"jmp . \n\t"
 			"movl %%cr4,%%eax \n\t"
@@ -111,7 +129,7 @@ void initproc()
 			"movl %%eax,%%cr4 \n\t"      //修改cr4.pse
 			"movl %0,%%cr3\n\t"
 			"push $0x3b \n\t"
-			"push $0xffffe \n\t"
+			"push $0x13FFFFE \n\t"
 			"push $0x43 \n\t"//处理堆栈 user_code
 
 			"push $0x1000000 \n\t"
@@ -274,7 +292,7 @@ void exce()
 	PCB * pcb=(PCB *)pcb_;
 	pcb->esp=0x3FFFF0;
 	pcb->status=READY;
-	pcb->CR3=page;
+	pcb->cr3=page;
 	pcb->pid=*(b32 *)PID+4;			//填充PCB
 	*(b32 *)PID+=4;
 
@@ -288,3 +306,4 @@ void exce()
 //从队列移出
 //回收空间，使用遍历页表的形式
 void exit();
+

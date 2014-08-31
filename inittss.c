@@ -1,5 +1,30 @@
 #include "inc/type.h"
 #define TSSADDR 0x1CA00
+typedef struct
+{
+		b32 esp0;		//0x0
+		b32 ss0;		//0x4
+		b32 cr3;		//0x8
+		b32 eip;		//0xc
+		b32 eflags;		//0x10
+		b32 eax;		//0x14
+		b32 ecx;		//0x18
+		b32 edx;		//0x1c
+		b32 ebx;		//0x20
+		b32 esp;		//0x24
+		b32 ebp;		//0x28
+		b32 esi;		//0x2c
+		b32 edi;		//0x30
+		b32 es;			//0x34
+		b32 cs;			//0x38
+		b32 ss;			//0x3c
+		b32 ds;			//0x40
+		b32 fs;			//0x44
+		b32 gs;			//0x48
+		b32 status;		//0x4c
+		b32 pid;		//0x50  
+} PCB;
+
 typedef struct _tss
 {
 	b32	link;
@@ -59,3 +84,30 @@ void set_tss()
 		"ltr	%%ax \n\t"
 		:::"%ax");
 }
+
+//为任务调度提供TSS操作函数
+
+void loadtss(tss *tssaddr,PCB *pcb)
+{
+	tssaddr->esp0=pcb->esp0;
+	tssaddr->ss0=pcb->ss0;
+	tssaddr->cr3=pcb->cr3;
+	tssaddr->eip=pcb->eip;
+	tssaddr->eflags=pcb->eflags;
+	tssaddr->eax=pcb->eax;
+	tssaddr->ecx=pcb->ecx;
+	tssaddr->edx=pcb->edx;
+	tssaddr->ebx=pcb->ebx;
+	tssaddr->esp=pcb->esp;
+	tssaddr->ebp=pcb->ebp;
+	tssaddr->esi=pcb->esi;
+	tssaddr->edi=pcb->edi;
+	tssaddr->es=pcb->es;
+	tssaddr->cs=pcb->cs;
+	tssaddr->ss=pcb->ss;
+	tssaddr->ds=pcb->ds;
+	tssaddr->fs=pcb->fs;
+	tssaddr->gs=gs;
+}
+
+

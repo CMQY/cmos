@@ -14,7 +14,7 @@ _start()
 			"int $80 \n\t"
 			:::
 			);
-	while(1)
+/*	while(1)
 	{
 		int i=0;
 		fot(i=0;i<80;){
@@ -29,7 +29,7 @@ _start()
 		if(findfile(bin))
 			exec(bin);
 		else
-			print("file no find\n");
+			print("file not find\n");
 		setcursor();
-	}
+	} */
 }

@@ -1,30 +1,64 @@
-;时钟中断
+;任务调度执行部件，内嵌选择部件
 
 extern dispatcher
 
+TSSADDR equ 0x1CA00
 CURPCB equ 0x503230
 RAEDY equ 0x1
 dispatcher:
-	cli
-	push eax
-	push ebx
-	push ecx
-	push edx
-	push ebp
-	push esi
-	push edi
-	push ds
-	push es
-	push fs
-	push gs
-	pushf
-	
+
 ;保存PCB
-	mov ebx,CURPCB
+	push ebp
+	mov ebp,esp
+	mov ebx,CURPCB	;取当前PCB地址
 	mov eax,[ebx]
-	mov [eax],esp
-	mov [eax+4],ERADY
+
+	mov ebx,[ebp+8]
+	mov [eax+0x10],ebx	;eflags
+
+	mov ebx,[ebp+0xc]
+	mov [eax+0x48],ebx	;gs
+
+	mov ebx,[ebp+0x10]
+	mov [eax+0x44],ebx	;fs
+	
+	mov ebx,[ebp+0x14]
+	mov [eax+0x34],ebx	;es
+
+	mov ebx,[ebp+0x18]	;ds
+	mov [eax+0x40],ebx
+
+	mov ebx,[ebp+0x1c]	;cs
+	mov [eax+0x38],ebx
+
+	mov ebx,[ebp+0x20]	;edi
+	mov [eax+0x30],ebx
+
+	mov ebx,[ebp+0x24]	;esi
+	mov [eax+0x2c],ebx
+	
+	mov ebx,[ebp+0x28]	;ebp
+	mov [eax+0x28],ebx
+
+	mov ebx,[ebp+0x2c]	;esp
+	mov [eax+0x24],ebx
+
+	mov ebx,[ebp+0x30]	;ebx
+	mov [eax+0x20],ebx
+
+	mov ebx,[ebp+0x34]	;edx
+	mov [eax+0x1c],ebx
+
+	mov ebx,[ebp+0x38]	;ecx
+	mov [eax+0x18],ebx
+
+	mov ebx,[ebp+0x3c]	;eax
+	mov [eax+0x14],ebx
+	
+	
 	mov [eax+8],cr3
+	mov [eax+c],eip;
+	mov [eax+12],
 
 ;pcb进入就绪队列
 	push eax
@@ -51,26 +85,25 @@ dispatcher:
 	mov esp,ebp
 
 ;修改pcb->status
-	mov [eax+4],RUN
+	mov [eax+0x4c],RUN
 	
 ;修改CURPCB
 	mov ebx,CURPCB
 	mov [ebx],eax
 
-	mov esp,[eax]
-	mov cr3,[eax+8]
+	push eax
+	push TSSADDR
+	call loadtss	;装载TSS
 
-	popf
-	pop gs
-	pop fs
-	pop es
-	pop ds
-	pop edi
-	pop esi
-	pop ebp
-	pop edx
-	pop ecx
-	pop ebx
-	pop eax
+	push 
+
+	mov al,0x20		;发送EOI
+	out 0x20,,al
+	
+	push ss
+	pus esp
+	pushf
+	push cs
+	push eip
 	sti
 	iret
