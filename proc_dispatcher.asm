@@ -1,10 +1,17 @@
 ;任务调度执行部件，内嵌选择部件
 
-extern dispatcher
+global dispatcher
+extern printbyte,quenein,queneout
+
+READYAddr equ 0x501100
+READYBottom equ 0x502100
+READYhead equ 0x503220
+READYtail equ 0x503224
 
 TSSADDR equ 0x1CA00
 CURPCB equ 0x503230
-RAEDY equ 0x1
+READY equ 0x1
+RUN equ 0x0
 dispatcher:
 
 ;保存PCB
@@ -14,7 +21,7 @@ dispatcher:
 	mov eax,[ebx]
 
 	mov ebx,[ebp+8]
-	mov [eax+0x10],ebx	;eflags
+	mov [eax+0x4c],ebx	;eflags
 
 	mov ebx,[ebp+0xc]
 	mov [eax+0x48],ebx	;gs
@@ -28,7 +35,7 @@ dispatcher:
 	mov ebx,[ebp+0x18]	;ds
 	mov [eax+0x40],ebx
 
-	mov ebx,[ebp+0x1c]	;cs
+	mov ebx,[ebp+0x48]	;cs
 	mov [eax+0x38],ebx
 
 	mov ebx,[ebp+0x20]	;edi
@@ -40,7 +47,7 @@ dispatcher:
 	mov ebx,[ebp+0x28]	;ebp
 	mov [eax+0x28],ebx
 
-	mov ebx,[ebp+0x2c]	;esp
+	mov ebx,[ebp+0x50]	;esp
 	mov [eax+0x24],ebx
 
 	mov ebx,[ebp+0x30]	;ebx
@@ -55,10 +62,17 @@ dispatcher:
 	mov ebx,[ebp+0x3c]	;eax
 	mov [eax+0x14],ebx
 	
-	
-	mov [eax+8],cr3
-	mov [eax+c],eip;
-	mov [eax+12],
+	mov ebx,[ebp+0x54]	;ss
+	mov [eax+0x3c],ebx
+
+	mov ebx,[ebp+0x44]	;eip
+	mov [eax+0xc],ebx
+
+	jmp $
+
+	mov ebx,cr3
+	mov [eax+8],ebx
+	mov dword [eax+0x4c],READY
 
 ;pcb进入就绪队列
 	push eax
@@ -79,31 +93,46 @@ dispatcher:
 	push READYBottom
 	push READYAddr
 	call queneout
-	add esp 0x14
+	add esp,0x14
 	
 	mov eax,[ebp-4]
 	mov esp,ebp
 
 ;修改pcb->status
-	mov [eax+0x4c],RUN
+	mov dword [eax+0x4c],RUN
 	
 ;修改CURPCB
 	mov ebx,CURPCB
 	mov [ebx],eax
-
-	push eax
-	push TSSADDR
-	call loadtss	;装载TSS
-
-	push 
-
-	mov al,0x20		;发送EOI
-	out 0x20,,al
 	
-	push ss
-	pus esp
-	pushf
-	push cs
-	push eip
+	push eax
+	call printbyte
+	add esp,4
+
+;恢复CPU上下文
+	mov ecx,[eax+0x18]
+	mov edx,[eax+0x1c]
+	mov ebx,[eax+0x20]
+	mov ebp,[eax+0x28]
+	mov esi,[eax+0x2c]
+	mov edi,[eax+0x30]
+	mov es,[eax+0x34]
+	mov ds,[eax+0x40]
+	mov fs,[eax+0x44]
+	mov gs,[eax+0x48]
+
+	push dword [eax+0x3c]
+	push dword [eax+0x24]
+	push dword [eax+0x10]
+	push dword [eax+0x38]
+	push dword [eax+0xc]
+	push dword [eax+0x14] ;eax
+	push dword [eax+0x20] ;ebx
+	mov ebx,[eax+0x08]
+	mov cr3,ebx
+	pop ebx
+	mov al,0x20
+	out 0x20,al
+	pop eax
 	sti
 	iret

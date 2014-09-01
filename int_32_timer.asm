@@ -2,11 +2,18 @@
 ;FUNCTION : 时钟中断处理程序
 ;需要任务调度锁，暂定位置：0x503300
 
-PROCLOCK equ 0x503300
+PROCLOCK equ 0x503310
 
 
 bits 32
 global int_32_timer
+extern dispatcher
+
+		;ss			;0x54
+		;esp		;0x50
+		;eflags		;0x4c
+		;cs			;0x48
+		;eip		;0x44
 int_32_timer:
 		cli
 		pushad
@@ -15,25 +22,26 @@ int_32_timer:
 		;ecx		;0x38
 		;edx		;0x34
 		;ebx		;0x30
-		;temp(esp)	;0x2c
+		;temp(esp)	;0x2c	x
 		;ebp		;0x28
 		;esi		;0x24
 		;edi		;0x20
-		push cs		;0x1c
+		push cs		;0x1c	x
 		push ds		;+0x18
 		push es		;+0x14
 		push fs		;+0x10
 		push gs		;+0xc
-		pushf		;+0x8
+		pushf		;+0x8	x
 		mov eax,PROCLOCK
 		mov ebx,[eax]
+	;	jmp $
 		cmp ebx,0
 		jz nodispatch
 
 		call dispatcher
 
 nodispatch:
-		mov al,0x20    //发送EOI信号
+		mov al,0x20    ;发送EOI信号
 		out 0x20,al
 		popf
 		pop gs

@@ -107,7 +107,7 @@ void loadtss(tss *tssaddr,PCB *pcb)
 	tssaddr->ss=pcb->ss;
 	tssaddr->ds=pcb->ds;
 	tssaddr->fs=pcb->fs;
-	tssaddr->gs=gs;
+	tssaddr->gs=pcb->gs;
 }
 
 

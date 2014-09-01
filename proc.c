@@ -83,14 +83,13 @@ typedef struct
 		b32 ds;
 		b32 fs;
 		b32 gs;
-		b32 esp;
 		b32 status;
 		b32 pid;    //页表结构，使用4M页
 } PCB;
 
 void initproc()
 {
-	initlinkstack(PCBAddr,4*4);
+	initlinkstack(PCBAddr,0x54);
 	initquenes();
 	addgdt();//添加用户GDT，所有用户进程使用同一类GDT选择子
 	*(b32 *)PID=0; //初始化PID池
@@ -114,10 +113,6 @@ void initproc()
 	*(b32 *)PID=*(b32 *)PID+4;
 	b32 phymem;
 	b8 filename[11]="PROGRAM BIN";
-    asm volatile(
-			"jmp . \n\t"
-			:::
-			);
 	mempop(&phymem);
 
 	readfile(&filename,phymem);

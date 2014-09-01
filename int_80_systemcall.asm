@@ -5,7 +5,7 @@ bits 32
 global int_80_systemcall
 extern print
 
-PROCLOCK equ 0x503300
+PROCLOCK equ 0x503310
 
 int_80_systemcall:
 		cli
@@ -33,7 +33,7 @@ call2:
 		call procunlock
 		jmp non
 call3:	
-		push [ebp+0xc]
+		push dword [ebp+0xc]
 		call print
 		add esp,4
 non:	
@@ -43,20 +43,20 @@ non:
 		pop ds
 		popad
 		leave
-		iret 12
+		iret
 
 
 proclock:
 		push eax
 		mov eax,PROCLOCK
-		mov [eax],0
+		mov dword [eax],0
 		pop eax
 		ret
 
 procunlock:
 		push eax
 		mov eax,PROCLOCK
-		mov [eax],1
+		mov dword [eax],1
 		pop eax
 		ret
 
