@@ -1,7 +1,7 @@
 ;任务调度执行部件，内嵌选择部件
 
 global dispatcher
-extern printbyte,quenein,queneout
+extern printdword,quenein,queneout,savecontext
 
 READYAddr equ 0x501100
 READYBottom equ 0x502100
@@ -12,67 +12,29 @@ TSSADDR equ 0x1CA00
 CURPCB equ 0x503230
 READY equ 0x1
 RUN equ 0x0
+
+user_data equ 0x33
+user_stack equ 0x3b
+user_code equ 0x43
+
 dispatcher:
 
 ;保存PCB
+	jmp $
 	push ebp
 	mov ebp,esp
 	mov ebx,CURPCB	;取当前PCB地址
 	mov eax,[ebx]
 
-	mov ebx,[ebp+8]
-	mov [eax+0x4c],ebx	;eflags
-
-	mov ebx,[ebp+0xc]
-	mov [eax+0x48],ebx	;gs
-
-	mov ebx,[ebp+0x10]
-	mov [eax+0x44],ebx	;fs
-	
-	mov ebx,[ebp+0x14]
-	mov [eax+0x34],ebx	;es
-
-	mov ebx,[ebp+0x18]	;ds
-	mov [eax+0x40],ebx
-
-	mov ebx,[ebp+0x48]	;cs
-	mov [eax+0x38],ebx
-
-	mov ebx,[ebp+0x20]	;edi
-	mov [eax+0x30],ebx
-
-	mov ebx,[ebp+0x24]	;esi
-	mov [eax+0x2c],ebx
-	
-	mov ebx,[ebp+0x28]	;ebp
-	mov [eax+0x28],ebx
-
-	mov ebx,[ebp+0x50]	;esp
-	mov [eax+0x24],ebx
-
-	mov ebx,[ebp+0x30]	;ebx
-	mov [eax+0x20],ebx
-
-	mov ebx,[ebp+0x34]	;edx
-	mov [eax+0x1c],ebx
-
-	mov ebx,[ebp+0x38]	;ecx
-	mov [eax+0x18],ebx
-
-	mov ebx,[ebp+0x3c]	;eax
-	mov [eax+0x14],ebx
-	
-	mov ebx,[ebp+0x54]	;ss
-	mov [eax+0x3c],ebx
-
-	mov ebx,[ebp+0x44]	;eip
-	mov [eax+0xc],ebx
-
-	jmp $
-
 	mov ebx,cr3
-	mov [eax+8],ebx
-	mov dword [eax+0x4c],READY
+	mov [eax],ebx
+	mov dword [eax+0x2c],READY
+	
+	push eax
+	lea ebx,[ebp+0x18]
+	push ebx;
+	call savecontext;
+	add esp,0x8
 
 ;pcb进入就绪队列
 	push eax
@@ -99,36 +61,39 @@ dispatcher:
 	mov esp,ebp
 
 ;修改pcb->status
-	mov dword [eax+0x4c],RUN
+	mov dword [eax+0x2c],RUN
 	
 ;修改CURPCB
 	mov ebx,CURPCB
 	mov [ebx],eax
 	
 	push eax
-	call printbyte
+	push eax
+	call printdword
 	add esp,4
+	pop eax
 
 ;恢复CPU上下文
-	mov ecx,[eax+0x18]
-	mov edx,[eax+0x1c]
-	mov ebx,[eax+0x20]
-	mov ebp,[eax+0x28]
-	mov esi,[eax+0x2c]
-	mov edi,[eax+0x30]
-	mov es,[eax+0x34]
-	mov ds,[eax+0x40]
-	mov fs,[eax+0x44]
-	mov gs,[eax+0x48]
+	mov ecx,[eax+0x10]
+	mov edx,[eax+0x14]
+	mov ebp,[eax+0x20]
+	mov esi,[eax+0x24]
+	mov edi,[eax+0x28]
 
-	push dword [eax+0x3c]
-	push dword [eax+0x24]
-	push dword [eax+0x10]
-	push dword [eax+0x38]
-	push dword [eax+0xc]
-	push dword [eax+0x14] ;eax
-	push dword [eax+0x20] ;ebx
-	mov ebx,[eax+0x08]
+	mov bx,user_data
+	mov es,bx
+	mov ds,bx
+	mov fs,bx
+	mov gs,bx
+
+	push user_stack
+	push dword [eax+0x1c]
+	push dword [eax+0x8]
+	push user_code
+	push dword [eax+0x4]
+	push dword [eax+0xc] ;eax
+	push dword [eax+0x18] ;ebx
+	mov ebx,[eax]
 	mov cr3,ebx
 	pop ebx
 	mov al,0x20

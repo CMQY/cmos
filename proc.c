@@ -67,32 +67,56 @@ void int_80_systemcall();
 //已使用的内存空间-->由缺页中断和虚拟内存管理程序维护
 typedef struct
 {
-		b32 esp0;
-		b32 ss0;
-		b32 cr3;
-		b32 eip;
-		b32 eflags;
-		b32 eax;
-		b32 ecx;
-		b32 edx;
-		b32 ebx;
-		b32 esp;
-		b32 ebp;
-		b32 esi;
-		b32 edi;
-		b32 es;
-		b32 cs;
-		b32 ss;
-		b32 ds;
-		b32 fs;
-		b32 gs;
-		b32 status;
-		b32 pid;    //页表结构，使用4M页
+		b32 cr3;		//0x0
+		b32 eip;		//0x4
+		b32 eflags;		//0x8
+		b32 eax;		//0xc
+		b32 ecx;		//0x10
+		b32 edx;		//0x14
+		b32 ebx;		//0x18
+		b32 esp;		//0x1c
+		b32 ebp;		//0x20
+		b32 esi;		//0x24
+		b32 edi;		//0x28
+		b32 status;		//0x2c
+		b32 pid;		//0x30
 } PCB;
+
+typedef struct
+{
+	b32 edi;
+	b32 esi;
+	b32 ebp;
+	b32 temp;
+	b32 ebx;
+	b32 edx;
+	b32 ecx;
+	b32 eax;
+	b32 eip;
+	b32 cs;
+	b32 eflags;
+	b32 esp;
+	b32 ss;
+} CONTEXT;
+
+void savecontext(CONTEXT * stack,PCB * pcb)
+{
+	pcb->eip=stack->eip;
+	pcb->eflags=stack->eflags;
+	pcb->eax=stack->eax;
+	pcb->ecx=stack->ecx;
+	pcb->edx=stack->edx;
+	pcb->ebx=stack->ebx;
+	pcb->esp=stack->esp;
+	pcb->ebp=stack->ebp;
+	pcb->esi=stack->esi;
+	pcb->edi=stack->edi;
+}
+
 
 void initproc()
 {
-	initlinkstack(PCBAddr,0x54);
+	initlinkstack(PCBAddr,0x34);
 	initquenes();
 	addgdt();//添加用户GDT，所有用户进程使用同一类GDT选择子
 	*(b32 *)PID=0; //初始化PID池

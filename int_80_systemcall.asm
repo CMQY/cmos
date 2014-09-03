@@ -13,7 +13,6 @@ selector_vedio equ 0x20
 
 int_80_systemcall:
 		cli
-		jmp $
 		push ebp
 		mov ebp,esp
 		pushad

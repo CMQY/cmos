@@ -10,14 +10,14 @@ b32 quenein(b32 top_,b32 bottom_,b32 front_,b32 back_,b32 elemt_ )
 	b32 *bottom =(b32*)bottom_;
 	b32 *front =(b32*)front_;
 	b32 *back =(b32*)back_;
-	b32 *elemt =(b32*)elemt_;
+	b32 elemt =elemt_;
 	b32 add=add4(*top,*bottom,*back);
 	if(add==*front){
 		return 0;
 	}
 	else{
 		b32 *temp=(b32*)*back;
-		*temp=*elemt;
+		*temp=elemt;
 		*back=add;
 		return 1;
 	}
