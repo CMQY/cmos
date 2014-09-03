@@ -1,7 +1,7 @@
 #include"inc/type.h"
 #define IDTADDR 0x1C200
 #define IDTLIMIT 0x800
-
+#define GDTADDR 0xc200
 #define PROCLOCK 0x503310
 /***********************************************************************************
 ÖÐ¶Ï³õÊŒ»¯³ÌÐò¡£
@@ -50,6 +50,14 @@ void idtload(int index, b32 addr, b16 attribute)
 	idtbase[index].attribute = attribute;
 }
 
+void gateload(int index, b32 addr, b16 attribute)
+{
+	idt * idtbase=(idt *)GDTADDR;
+	idtbase[index].offseth16 = (addr>>16) & 0xFFFF;
+	idtbase[index].offsetl16 = addr &0xFFFF;
+	idtbase[index].seg = 0x58;
+	idtbase[index].attribute = attribute;
+}
 
 /*************************************************************
 函数声明，在interrupttransfer.asm中定义
@@ -75,7 +83,6 @@ void int_32_timer();
 void int_33_keyboard();
 
 
-void int_80_systemcall();
 /******************************************************************
 初始化中断
 在内核中被调用
@@ -104,7 +111,6 @@ void initidt()
 ******************************************************************************/
 	idtload(32, (b32) &int_32_timer, DA_386IGate);
 	idtload(33, (b32) &int_33_keyboard, DA_386IGate);
-	idtload(80, (b32) &int_80_systemcall, DA_386IGate | 0x3);  //向内层堆栈复制3个参数
 
 
 

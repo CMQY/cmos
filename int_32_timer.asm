@@ -3,7 +3,10 @@
 ;需要任务调度锁，暂定位置：0x503300
 
 PROCLOCK equ 0x503310
-
+selector_code equ 0x18
+selector_data equ 0x08
+selector_stack equ 0x10
+selector_vedio equ 0x20
 
 bits 32
 global int_32_timer
@@ -32,6 +35,12 @@ int_32_timer:
 		push fs		;+0x10
 		push gs		;+0xc
 		pushf		;+0x8	x
+		mov ax,selector_data
+		mov ds,ax
+		mov es,ax
+		mov gs,ax
+		mov ax,selector_vedio
+		mov fs,ax
 		mov eax,PROCLOCK
 		mov ebx,[eax]
 	;	jmp $

@@ -38,7 +38,8 @@
 #define user_data 0x30
 #define user_code 0x40
 #define user_stack 0x38
-
+#define systemcall  0x50
+#define selector_systemcall 0x58
 //函数声明
 void initlinkstack(b32,b32); //in proc_link_stack.c
 b32 getpageaddr(b32,b32,b32,b32);
@@ -56,6 +57,8 @@ void loaddescriptor(int,b32,b16,b16);
 void memset(b32,b32);
 b32 initpage(b32);
 
+void gateload(int index, b32 addr, b16 attribute);
+void int_80_systemcall();
 //进程控制块内容
 //CPU环境上下文-->保存在堆栈，包括各寄存器
 //堆栈地址
@@ -118,11 +121,11 @@ void initproc()
 	readfile(&filename,phymem);
 	linkpage(pcb->cr3,0x1000000,phymem);// 处理页表
 	asm volatile(
-			"jmp . \n\t"
 			"movl %%cr4,%%eax \n\t"
 			"or $0x10,%%eax \n\t"
 			"movl %%eax,%%cr4 \n\t"      //修改cr4.pse
 			"movl %0,%%cr3\n\t"
+			"movl 0x503300,%%eax \n\t"
 			"push $0x3b \n\t"
 			"push $0x13FFFFE \n\t"
 			"push $0x43 \n\t"//处理堆栈 user_code
@@ -155,6 +158,11 @@ void addgdt()
 	//user_code
 	loaddescriptor(9,0xB8000,0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL3 | DA_DRW,0xFFFF);
 	//user_vedio
+	
+	gateload(10,&int_80_systemcall,DA_386CGate | 3 | IA_DPL3); //386调用门 3个参数
+	//systemcall
+	
+	loaddescriptor(11,0,0x0F00 | DA_32 |DA_LIMIT_4K |0x9A,0xFFFF);
 }
 
 //分页初始化函数

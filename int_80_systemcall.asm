@@ -6,9 +6,14 @@ global int_80_systemcall
 extern print
 
 PROCLOCK equ 0x503310
+selector_code equ 0x18
+selector_data equ 0x08
+selector_stack equ 0x10
+selector_vedio equ 0x20
 
 int_80_systemcall:
 		cli
+		jmp $
 		push ebp
 		mov ebp,esp
 		pushad
@@ -17,7 +22,14 @@ int_80_systemcall:
 		push fs
 		push gs
 
-		mov eax,[ebp+8]
+		mov ax,selector_data
+		mov ds,ax
+		mov es,ax
+		mov gs,ax
+		mov ax,selector_vedio
+		mov fs,ax
+
+		mov eax,[ebp+12]
 		cmp eax,1
 		jz call1
 		cmp eax,2
@@ -43,7 +55,8 @@ non:
 		pop ds
 		popad
 		leave
-		iret
+		sti
+		retf 12
 
 
 proclock:
