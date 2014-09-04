@@ -80,6 +80,8 @@ typedef struct
 		b32 edi;		//0x28
 		b32 status;		//0x2c
 		b32 pid;		//0x30
+		b32 cs;			//0x34
+		b32 ss;			//0x38
 } PCB;
 
 typedef struct
@@ -111,12 +113,14 @@ void savecontext(CONTEXT * stack,PCB * pcb)
 	pcb->ebp=stack->ebp;
 	pcb->esi=stack->esi;
 	pcb->edi=stack->edi;
+	pcb->cs=stack->cs;
+	pcb->ss=stack->ss;
 }
 
 
 void initproc()
 {
-	initlinkstack(PCBAddr,0x34);
+	initlinkstack(PCBAddr,0x3c);
 	initquenes();
 	addgdt();//添加用户GDT，所有用户进程使用同一类GDT选择子
 	*(b32 *)PID=0; //初始化PID池
@@ -149,7 +153,11 @@ void initproc()
 			"or $0x10,%%eax \n\t"
 			"movl %%eax,%%cr4 \n\t"      //修改cr4.pse
 			"movl %0,%%cr3\n\t"
-			"movl 0x503300,%%eax \n\t"
+			"movw $0x33,%%ax \n\t"
+			"movw %%ax,%%ds \n\t"
+			"movw %%ax,%%es \n\t"
+			"movw %%ax,%%gs \n\t"
+			"movw %%ax,%%fs \n\t"
 			"push $0x3b \n\t"
 			"push $0x13FFFFE \n\t"
 			"push $0x43 \n\t"//处理堆栈 user_code

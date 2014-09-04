@@ -44,7 +44,7 @@ call2:
 		call procunlock
 		jmp non
 call3:	
-		push dword [ebp+0xc]
+		push dword [ebp+0x10]
 		call print
 		add esp,4
 non:	

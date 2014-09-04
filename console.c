@@ -1,19 +1,15 @@
 /**************************************************************************
  * console.c 系统守护程序，处理用户命令
  *************************************************************************/
-
-_start()
+void systemcall(b32,b32,b32);
+main()
 {
 	//在最后一行输出信息
-	b8 bin[80];
-	//开时钟中断
-	asm volatile(
-			"push $0x2 \n\t"   //systemcall(1,0,0),,procunlock
-			"push $0x2 \n\t"
-			"push $0x2 \n\t"
-			"int $80 \n\t"
-			:::
-			);
+	char msg[]="first task in c ^_^ \n";
+
+	systemcall(2,2,2);
+	for(;;)
+	systemcall(3,&msg,0);
 /*	while(1)
 	{
 		int i=0;

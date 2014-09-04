@@ -93,3 +93,17 @@ proc_dispatcher.o : proc_dispatcher.asm
 	$(NASM32) -o $@ $<
 program.o : console.c
 	nasm -o $@ $<
+
+console.o : console.c
+	$(GCC32) -o $@ $<
+lib/systemcall.o : lib/systemcall.asm
+	$(NASM32) -o $@ $<
+
+program.bin : console.o lib/systemcall.o
+	ld -m elf_i386 -static -Ttext 0x1000000 -e main -N --oformat binary -o program.bin console.o lib/systemcall.o
+
+move : program.bin
+	mount U.img /mnt
+	mv program.bin /mnt
+	umount /mnt
+

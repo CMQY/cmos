@@ -20,7 +20,6 @@ user_code equ 0x43
 dispatcher:
 
 ;保存PCB
-	jmp $
 	push ebp
 	mov ebp,esp
 	mov ebx,CURPCB	;取当前PCB地址
@@ -31,11 +30,12 @@ dispatcher:
 	mov dword [eax+0x2c],READY
 	
 	push eax
+	push eax
 	lea ebx,[ebp+0x18]
 	push ebx;
 	call savecontext;
 	add esp,0x8
-
+	pop eax
 ;pcb进入就绪队列
 	push eax
 	push READYtail
@@ -86,10 +86,10 @@ dispatcher:
 	mov fs,bx
 	mov gs,bx
 
-	push user_stack
+	push dword [eax+0x38]
 	push dword [eax+0x1c]
 	push dword [eax+0x8]
-	push user_code
+	push dword [eax+0x34]
 	push dword [eax+0x4]
 	push dword [eax+0xc] ;eax
 	push dword [eax+0x18] ;ebx

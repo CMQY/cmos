@@ -55,6 +55,10 @@ void do_stack_error()
 void do_general_protection()
 {
 	print("int 13\n");
+	asm volatile(
+		"jmp . \n\t"
+		:::
+		);
 }
 void do_page_fault()
 {

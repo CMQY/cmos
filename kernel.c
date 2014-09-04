@@ -48,6 +48,11 @@ void _start()
 		"movw $0x10,%%cx \n\t"
 		"movw %%cx,%%ss \n\t"
 		"movw %%eax,%%esp \n\t"		//修改系统栈，只能在此处内联汇编
+		"movw $0x08,%%cx \n\t"
+		"movw %%cx,%%ds \n\t"
+		"movw %%cx,%%es \n\t"
+		"movw %%cx,%%gs \n\t"
+		"movw %%cx,%%fs \n\t"
 		"ljmp $0x18,$1f\n\t"             //选择子属性，顺序未变
 		"1:"
 		::"b"(pgdtr) : "%eax", "%cx"
