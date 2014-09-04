@@ -106,4 +106,5 @@ move : program.bin
 	mount U.img /mnt
 	mv program.bin /mnt
 	umount /mnt
+	rm *.o
 
