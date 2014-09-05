@@ -1,7 +1,7 @@
 ;FILENAME : scrollscreen.asm
 ;FUNCTION : scroll screen a line
 ;USAGE	  : scrollscreen ()
-;调用后必须手动重新或许CursorPos值
+;调用后必须手动重新获取CursorPos值
 %include "inc/selector.inc"
 global scrollscreen
 
@@ -20,7 +20,7 @@ scrollscreen:
 	mov ax,SELECTOR_VEDIO
 	mov DS,ax
 
-	mov ecx,80*24
+	mov ecx,80*23
 	mov edi,0
 	mov esi,160
 	mov al,02

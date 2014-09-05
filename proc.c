@@ -130,11 +130,7 @@ void initproc()
 	b32 page;
 	procpop(&pcb_);
 	*(b32 *)CURPCB=pcb_;   //初始化当前PCB
-/*	asm volatile(
-			"jmp . \n\t"
-			:::
-			);   */
-	getpageaddr(PCBAddr,pcb_,16,&page);
+	getpageaddr(PCBAddr,pcb_,0x3c,&page);
 	initpage(page);     //初始化分页，平坦映射内核空间
 	PCB * pcb=(PCB *)pcb_;
 	pcb->esp=0x13FFFF0;
@@ -307,38 +303,4 @@ void dispatcher()
 			);
 }
 */
-
-
-
-//创建进程的系统调用
-//分配空间
-//装载程序，此过程填充页表
-//加入就绪队列
-//
-//define READY 1
-//define BUSY 2
-//define RUN 0
-void exce()
-{
-	b32 pcb_;		//存放PCB地址
-	b32 page;		//存放PAGE地址
-	procpop(&pcb_);	//获取PCB地址
-	getpageaddr(PCBAddr,pcb_,16,&page);	//获取PAGE地址
-	PCB * pcb=(PCB *)pcb_;
-	pcb->esp=0x3FFFF0;
-	pcb->status=READY;
-	pcb->cr3=page;
-	pcb->pid=*(b32 *)PID+4;			//填充PCB
-	*(b32 *)PID+=4;
-
-	//填充用户堆栈
-//	loadfile();				//装载程序
-//	changerinand exe		//加入就绪队列
-
-}
-
-//退出进程的系统调用
-//从队列移出
-//回收空间，使用遍历页表的形式
-void exit();
 

@@ -70,7 +70,6 @@ void _start()
 	memmgr();
 	print("memory have been control\n");
 	
-	b8 str[]="systemcall test\n";
 	initproc();
 	exit();
 }

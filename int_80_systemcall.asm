@@ -3,7 +3,7 @@
 ;系统调用提供形式：void systemcall(b32 type,b32 arg1,b32 arg2)
 bits 32
 global int_80_systemcall
-extern print
+extern print,exec
 
 PROCLOCK equ 0x503310
 selector_code equ 0x18
@@ -21,6 +21,13 @@ int_80_systemcall:
 		push fs
 		push gs
 
+		mov eax,cr3
+		push eax
+		mov eax,0x100000
+		mov cr3,eax
+		mov eax,cr4
+		and eax,0xFFEF
+		mov cr4,eax
 		mov ax,selector_data
 		mov ds,ax
 		mov es,ax
@@ -35,6 +42,8 @@ int_80_systemcall:
 		jz call2
 		cmp eax,3
 		jz call3
+		cmp eax,4
+		jz call4
 		jmp non
 
 call1:	
@@ -47,7 +56,16 @@ call3:
 		push dword [ebp+0x10]
 		call print
 		add esp,4
+call4:
+;		push dword [ebp+0x10]
+;		call exec
+;		add esp,4
 non:	
+		mov eax,cr4
+		or eax,0x10
+		mov cr4,eax
+		pop eax
+		mov cr3,eax
 		pop gs
 		pop fs
 		pop es

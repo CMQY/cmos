@@ -6,7 +6,6 @@ main()
 {
 	//在最后一行输出信息
 	char msg[]="first task in c ^_^ \n";
-
 	systemcall(2,2,2);
 	for(;;)
 	systemcall(3,&msg,0);

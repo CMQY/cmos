@@ -54,7 +54,7 @@ print:
 		mov ES,ax
 		cld
 		mov edi,[CursorPos]
-		cmp edi,0FA0H
+		cmp edi,0F00H
 		jb .NEXT
 		call scrollscreen
 		mov edi,[CursorPos]
