@@ -6,7 +6,7 @@ LD86	=	ld86 -T 0
 
 
 everything	=	boot.bin loader.bin kernel.bin 
-kernel		=	kernel.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o keyboard_ctl.o lib/printbin.o lib/scrollscreen.o do_systemcall.o mem_mgr.o lib/hd_drive.o lib/lbatochs.o key_handle.o proc.o fat16_driver.o proc_link_stack.o quene.o lib/memset.o proc_dispatcher.o int_32_timer.o int_80_systemcall.o
+kernel		=	kernel.o lib/print.o lib/exit.o interrupt.o initinterrupt.o interrupttransfer.o inittss.o initgdt.o keyboard_ctl.o lib/printbin.o lib/scrollscreen.o  mem_mgr.o lib/hd_drive.o lib/lbatochs.o key_handle.o proc.o fat16_driver.o proc_link_stack.o quene.o lib/memset.o proc_dispatcher.o int_32_timer.o int_80_systemcall.o
 boot.bin : boot.asm inc/fat16head.inc
 	nasm -o $@ $<
 loader.bin : loader.asm inc/loader.inc
@@ -64,8 +64,8 @@ inittss.o : inittss.c inc/type.h
 	$(GCC32) -o $@ $<
 initgdt.o :initgdt.c inc/type.h
 	$(GCC32) -o $@ $<
-do_systemcall.o : do_systemcall.c
-	$(GCC32) -o $@ $<
+#do_systemcall.o : do_systemcall.c
+#	$(GCC32) -o $@ $<
 mem_mgr.o : mem_mgr.c
 	$(GCC32)  -o $@ $<
 

@@ -68,9 +68,9 @@ dispatcher:
 	mov [ebx],eax
 	
 	push eax
-	push eax
-	call printdword
-	add esp,4
+;	push eax
+;	call printdword
+;	add esp,4
 	pop eax
 
 ;恢复CPU上下文

@@ -10,6 +10,10 @@
  * Caps			：存放大小写状态
  * E0			：存放是否E0前缀
  *************************************************************************/
+
+ /************************************************************************
+  * 初始化循环队列，
+  ************************************************************************/
 #define E0 0x503240
 #define KEYADDR 0x503250
 #define KEYEND 0x503260
@@ -42,7 +46,7 @@ void key_handle(b32 scancodel)
 
 b32 add(b32 addr)
 {
-	if((addr+1)>=KEYEND)
+	if((addr+1)>KEYEND)
 		return (addr+1)-KEYEND+KEYADDR;
 	else
 		return addr+1;
@@ -58,13 +62,17 @@ void initkeyquene()
 
 b32 keyin(b8 key)
 {
+/*	asm volatile(
+		"jmp . \n\t"
+		:::
+		);	*/
 	b32 * front=(b32 *)KEYFRONT;
 	b32 * back =(b32 *)KEYBACK;
 	b32 addr=add(*back);
-	if(addr==*front)
+	if(addr==(*front))
 		return 0;
 	else{
-			b8 * temp=(b8 *)addr;
+			b8 * temp=(b8 *)*back;
 			*temp=key;
 			*back=addr;
 			return 1;
@@ -76,14 +84,14 @@ b32 keyout(b8 * key)
 	asm volatile(
 			"cli \n\t"
 			:::
-			);
+			); 
 	b32 *front=(b32 *)KEYFRONT;
 	b32 *back =(b32 *)KEYBACK;
 	b32 addr=add(*front);
-	if(addr == *back)
+	if(addr == (*back))
 		return 0;
 	else{
-		b8 *temp=(b8 *)addr;
+		b8 *temp=(b8 *)*front;
 		*key=*temp;
 		*front=addr;
 		return 1;
@@ -91,5 +99,5 @@ b32 keyout(b8 * key)
 	asm volatile(
 			"sti \n\t"
 			:::
-			);
+			); 
 }

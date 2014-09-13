@@ -39,3 +39,17 @@ void exec(b32 *filename)
 	linkpage(pcb->cr3,0x1000000,phymem);
 	quenein(READYAddr,RAEDYBottom,READYhead,READYtail,pcb_);
 }
+
+/******************************************************************************
+ * void printc(char c)
+ * 打印单个字符 内部调用print函数
+ ******************************************************************************/
+
+void printc(char c)
+{
+	char p[2];
+	p[0]=c;
+	p[1]=0;
+	print(p);
+}
+	
