@@ -2,50 +2,46 @@
  * console.c 系统守护程序，处理用户命令
  *************************************************************************/
 #include "inc/type.h"
-b32 systemcall(b32,b32,b32);
+b32 systemcall(b32,b32,b32,b32);
 void printc(char c);
 main()
 {
-	//在最后一行输出信息
-//	systemcall(2,2,2);
-	asm volatile(
-		"jmp . \n\t"
-		:::
-		);
-	for(;;){
-		char cmd[80];
-		int i=0;
-		for(i=0;i<80;i++){
-			if(systemcall(4,&cmd[i],0)!=0){
-				if(cmd[i]!='\n')
-					printc(cmd[i]);
-				else{
-		//			exec(cmd);
+	b8 filename[12];
+	b8 filename2[12];
+	b32 dd=0;
+		while(1)
+		{
+			char cmd[80];
+			cmd[79]='\0';
+			b32 i=0;
+			for(i=0;i<80;i++){
+				while(!systemcall(4,&cmd[i],0,0));
+				if(cmd[i]=='\n'){
+					cmd[i]='\0';
 					break;
 				}
+				printc(cmd[i]);
+			}
+			systemcall(3,"\n",0,0);
+			if(cmd[0]=='l'&&cmd[1]=='s'&&cmd[2]==0)
+			{
+				dd=systemcall(6,&filename,0,0);
+				systemcall(3,&filename,0,0);
+				systemcall(3,"\n",0,0);
+				while((dd=systemcall(7,dd,&filename2,0))>0)
+				{
+					systemcall(3,&filename2,0,0);
+					systemcall(3,"\n",0,0);
+				}
+			}
+			else if(cmd[0]==0)
+				continue;
+			else
+			{
+				systemcall(3,"unknown command\n",0,0);
 			}
 		}
-	//	systemcall(3,"\n",0);
-	}
 }
-/*	while(1)
-	{
-		int i=0;
-		fot(i=0;i<80;){
-			if(keyout(&bin[i])){
-				if(bin[i]==0xd)
-					break;
-				printchar(bin[i]); //输出字符
-				i++;
-			}
-		}
-		formart(&bin);
-		if(findfile(bin))
-			exec(bin);
-		else
-			print("file not find\n");
-		setcursor();
-	} */
 
 /******************************************************************************
  * void printc(char c)
@@ -57,5 +53,5 @@ void printc(char c)
     char p[2];
 	p[0]=c;
     p[1]='\0';
-    systemcall(3,p,0);
+    systemcall(3,(b32) p,0,0);
 }

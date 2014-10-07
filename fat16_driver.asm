@@ -14,7 +14,7 @@ ROOTNUM  equ 0x503304	;值 32   存放根目录数
 TEMPROOTSECTION equ 0x700000
 TEMPFATSECTION  equ 0x700200
 
-DATA equ 189  ;数据开始的山区
+DATA equ 189  ;数据开始的扇区
 ;//void readfile(b32 *filename,b32 desaddr)
 extern hdread
 global readfile

@@ -24,7 +24,6 @@ keyq_size	equ 10h		;键盘队列大小，暂定
 
 
 ;keyboard interrupt load in IRQ1
-;read the key and use 8255A to reset the 8042
 
 
 
@@ -45,7 +44,7 @@ do_keyboard:
 			call key_handle1	;处理扫描码
 
 ;key_reset:
-;			in al,0x61  ;使用8255A对8042进行复位
+;			in al,0x61  ;使用8255A对8042进行复位,bochs中不需要
 ;			jmp $+2
 ;			jmp $+2
 ;			or al,0x80

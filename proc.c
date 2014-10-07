@@ -49,7 +49,7 @@ b32 procpush(b32 *);
 b32 quenein(b32,b32,b32,b32,b32); //in quene.h
 b32 queneout(b32,b32,b32,b32,b32);
 
-void hdraed(b32,b32,b32);  //in lib/hd_drive.asm
+void hdread(b32,b32,b32);  //in lib/hd_drive.asm
 void hdwrite(b32,b32,b32);
 
 void readfile(b8 *,b32);  //in fat16_driver.asm
@@ -59,6 +59,9 @@ b32 initpage(b32);
 
 void gateload(int index, b32 addr, b16 attribute);
 void int_80_systemcall();
+
+b32 popstampblock(b32 *des);
+
 //进程控制块内容
 //CPU环境上下文-->保存在堆栈，包括各寄存器
 //堆栈地址
@@ -82,6 +85,9 @@ typedef struct
 		b32 pid;		//0x30
 		b32 cs;			//0x34
 		b32 ss;			//0x38
+		b8 name[8];		//0x3c
+		b32 mailblock;		//0x44
+		b32 fileblock;		//0x48
 } PCB;
 
 typedef struct
@@ -120,7 +126,7 @@ void savecontext(CONTEXT * stack,PCB * pcb)
 
 void initproc()
 {
-	initlinkstack(PCBAddr,0x3c);
+	initlinkstack(PCBAddr,0x4c);
 	initquenes();
 	addgdt();//添加用户GDT，所有用户进程使用同一类GDT选择子
 	*(b32 *)PID=0; //初始化PID池
@@ -128,15 +134,25 @@ void initproc()
 	//添加第一进程
 	b32 pcb_;
 	b32 page;
+
+	b32 mailblock;			//获得进程邮箱地址
+	popstampblock(&mailblock);
+
 	procpop(&pcb_);
 	*(b32 *)CURPCB=pcb_;   //初始化当前PCB
-	getpageaddr(PCBAddr,pcb_,0x3c,&page);
+
+	b32 fileblock;			//获取文件块地址
+	getfileblock(PCBAddr,pcb_,0x4c,&fileblock);
+
+	getpageaddr(PCBAddr,pcb_,0x4c,&page);
 	initpage(page);     //初始化分页，平坦映射内核空间
 	PCB * pcb=(PCB *)pcb_;
 	pcb->esp=0x13FFFF0;
 	pcb->status=RUN;
 	pcb->cr3=page;
 	pcb->pid=(*(b32 *)PID)+4;
+	pcb->mailblock=mailblock;
+	pcb->fileblock=fileblock;
 	*(b32 *)PID=*(b32 *)PID+4;
 	b32 phymem;
 	b8 filename[11]="PROGRAM BIN";
@@ -187,7 +203,7 @@ void addgdt()
 	loaddescriptor(9,0xB8000,0x0F00 | DA_32 | DA_LIMIT_4K | DA_DPL3 | DA_DRW,0xFFFF);
 	//user_vedio
 	
-	gateload(10,&int_80_systemcall,DA_386CGate | 3 | IA_DPL3); //386调用门 3个参数
+	gateload(10,&int_80_systemcall,DA_386CGate | 4 | IA_DPL3); //386调用门 4个参数
 	//systemcall
 	
 	loaddescriptor(11,0,0x0F00 | DA_32 |DA_LIMIT_4K |0x9A,0xFFFF);
@@ -221,86 +237,93 @@ void initquenes()
 	*readyhead=READYAddr;
 	*readytail=READYAddr+4;
 }
-//程序装载函数
-//装载函数并跳入执行
-//需内存管理和文件系统支持
-b32 loadfile()
-{}
 
 
-
-
-//分派程序
-//由时钟中断直接调用和系统调用内部调用
-//填充保存进程控制块内容
-//从将当前程序挂入就绪链表或挂起链表
-//从就绪链表中取出程序，无则循环检测
-/*
-void dispatcher()
+b32 user2phy(b32 useraddr)
 {
-	asm volatile(
-			"cli \n\t"
-			"push eax \n\t"
-			"push ebx \n\t"
-			"push ecx \n\t"
-			"push edx \n\t"
-			"push ebp \n\t"
-			"push esi \n\t"
-			"push edi \n\t"
-			"push ds \n\t"
-			"push es \n\t"
-			"push fs \n\t"
-			"push gs \n\t"
-			"pushf \n\t"
-			:::
-			);
-	
-	asm volatile(							//保存PCB
-			"movl CURPCB,%%eax \n\t"
-			"movl %%esp,(%%eax) \n\t"		//pcb->esp
-//			"movl $1,4(%%eax) \n\t"	//pcb->status  READY = 1
-			"movl %%cr3,8(%%eax) \n\t"		//pcb->cr3
-			:::"%eax"
-			);
-	
-	//pcb加入就绪队列
-	b32 * pcbaddr=(b32 *)CURPCB;
-	((PCB *)* pcbaddr)->status=READY;
-	quenein(READYAddr,READYBottom,READYhead,READYtail,*pcbaddr);
-	
-	//获取下一就绪进程
-	
-	PCB * nextpcb;
-	queneout(READYAddr,READYBottom,READYhead,READYtail,&nextpcb);
-
-	//修改当前CURPCB,修改pcb->status，切换分页，切换堆栈
-	nextpcb->status=RUN;
-	*pcbaddr=nextpcb;
-
-	asm volatile(
-			"movl %0,%%eax \n\t"
-			"movl (%%eax),%%esp \n\t"
-			"movl 8(%%eax),%%cr3 \n\t"
-			::"r"((b32)nextpcb):"%eax","%esp"
-			);
-
-	asm volatile(
-			"popf \n\t"
-			"pop gs \n\t"
-			"pop fs \n\t"
-			"pop es \n\t"
-			"pop ds \n\t"
-			"pop edi \n\t"
-			"pop esi \n\t"
-			"pop ebp \n\t"
-			"pop edx \n\t"
-			"pop ecx \n\t"
-			"pop ebx \n\t"
-			"pop eax \n\t"
-			"sti \n\t"
-			"iret \n\t"
-			:::
-			);
+	b32 temp=0;
+	b32 *pcurpcb=(b32 *)CURPCB;
+	PCB *pcb=(PCB*)(*pcurpcb);
+	b32 *cr3=(b32*)(pcb->cr3);
+	temp=useraddr/0x400000;
+	cr3+=temp;
+	return *cr3+useraddr%0x400000;
 }
-*/
 
+//遍历就绪和阻塞队列，查找所需程序
+
+
+//在quene.c中定义
+b32 add4(b32 top,b32 bottom,b32 add);
+
+
+b32 tracequene(b32 top_,b32 bottom_,b32 front_,b32 back_,b32 *elemt_)
+{
+	b32 top=(b32)top_;
+	b32 bottom=(b32)bottom_;
+	b32 *front=(b32 *)front_;
+	b32 *back=(b32 *)back_;
+
+	b32 *add=add4(top,bottom,*front);
+	if(add==*back){
+		return 0;
+	}
+	else
+	{
+		b32 *temp=(b32 *)add;
+		*elemt_=*temp;
+		*front=add;
+		return 1;
+	}
+}
+
+
+//用户态调用，进行地址转换
+b32 findproc(b8 *name_,b32 *pcb_)
+{
+	b8 *name=user2phy(name_);
+	b32 *pcb=user2phy(pcb_);
+
+	b32 *waithead=(b32 *)WAIThead;
+	b32 *waittail=(b32 *)WAITtail;
+	b32 *readyhead=(b32 *)READYhead;
+	b32 *readytail=(b32 *)READYtail;
+	
+	b32 waitfront=*waithead;
+	b32 waitback=*waittail;
+	b32 readyfront=*readyhead;
+	b32 readyback=*readytail;
+	
+	b32 elemt=0;
+	//遍历ready队列
+
+	while(tracequene(READYAddr,READYBottom,&readyfront,&readyback,&elemt)!=0)
+	{
+		PCB *pcbtemp=(PCB*)elemt;
+		if(strcmp(&(pcbtemp->name),name))
+		{
+			*pcb=pcbtemp;
+			return 1;
+		}
+	}
+
+	//遍历wait队列
+	while(tracequene(WAITAddr,WAITBottom,&waitfront,&waitback,&elemt)!=0)
+	{
+		PCB *pcbtemp=(PCB *)elemt;
+		if(strcmp(&(pcbtemp->name),name))
+		{
+			*pcb=pcbtemp;
+			return 1;
+		}
+	}
+
+	PCB *curpcb=(PCB *)CURPCB;
+	if(strcmp(&(curpcb->name),name))
+	{
+		*pcb=curpcb;
+		return 1;
+	}
+	else
+		return 0;
+}

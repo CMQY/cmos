@@ -3,7 +3,7 @@
 ;系统调用提供形式：void systemcall(b32 type,b32 arg1,b32 arg2)
 bits 32
 global int_80_systemcall
-extern print,exec,keyout
+extern print,exec,keyout,getfileitem,nextfileitem
 
 PROCLOCK equ 0x503310
 selector_code equ 0x18
@@ -15,7 +15,9 @@ int_80_systemcall:
 		cli
 		push ebp
 		mov ebp,esp
-		pushad
+		push ebx
+		push esi
+		push edi
 		push ds
 		push es
 		push fs
@@ -44,6 +46,12 @@ int_80_systemcall:
 		jz call3
 		cmp eax,4
 		jz call4
+		cmp eax,5
+		jz call5
+		cmp eax,6
+		jz call6
+		cmp eax,7
+		jz call7
 		jmp non
 
 call1:	
@@ -62,6 +70,23 @@ call4:
 		call keyout
 		add esp,4
 		jmp non
+call5:
+		push dword [ebp+0x10]
+		call exec
+		add esp,4
+		jmp non
+call6:
+		push dword [ebp+0x10]
+		call getfileitem
+		add esp,4
+		jmp non
+call7:
+		push dword [ebp+0x14]
+		push dword [ebp+0x10]
+		call nextfileitem
+		add esp,8
+		jmp non
+
 non:	
 		mov ebx,cr4
 		or ebx,0x10
@@ -72,23 +97,21 @@ non:
 		pop fs
 		pop es
 		pop ds
-		popad
+		pop edi
+		pop esi
+		pop ebx
 		leave
 		sti
-		retf 12
+		retf 16
 
 
 proclock:
-		push eax
 		mov eax,PROCLOCK
 		mov dword [eax],0
-		pop eax
 		ret
 
 procunlock:
-		push eax
 		mov eax,PROCLOCK
 		mov dword [eax],1
-		pop eax
 		ret
 

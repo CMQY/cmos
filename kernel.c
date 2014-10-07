@@ -70,6 +70,7 @@ void _start()
 	memmgr();
 	print("memory have been control\n");
 	
+	initstampblock();
 	initproc();
 	exit();
 }

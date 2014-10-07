@@ -24,7 +24,7 @@ void printbyte(b32);
 b32 keyin(b8);
 void key_handle(b32 scancodel)
 {
-	b8 keys[]={'*','*','1','2','3','4','5','6','7','8','9','0','-','=',8,'*','q','w','e','r','t','y','u','i','o','p','[',']',13,'*','a','s','d','f','g','h','j','k','l',';',39,'`','*',92,'z','x','c','v','b','n','m',',','.','/','*','*','*',' ','*'};
+	b8 keys[]={'*','*','1','2','3','4','5','6','7','8','9','0','-','=',8,'*','q','w','e','r','t','y','u','i','o','p','[',']',10,'*','a','s','d','f','g','h','j','k','l',';',39,'`','*',92,'z','x','c','v','b','n','m',',','.','/','*','*','*',' ','*'};
 /*	asm volatile(
 			"jmp . \n\t"
 			:::
@@ -39,14 +39,14 @@ void key_handle(b32 scancodel)
 	}
 	else if((scancode&0x80)!=0){}
 	else{
-		if(scancode<=0x38)
+		if(scancode<=0x39)
 		keyin(keys[scancode]);
 	}
 }
 
 b32 add(b32 addr)
 {
-	if((addr+1)>KEYEND)
+	if((addr+1)>=KEYEND)
 		return (addr+1)-KEYEND+KEYADDR;
 	else
 		return addr+1;
@@ -81,23 +81,23 @@ b32 keyin(b8 key)
 
 b32 keyout(b8 * key)
 {
-	asm volatile(
+/*	asm volatile(
 			"cli \n\t"
 			:::
-			); 
+			);  */
 	b32 *front=(b32 *)KEYFRONT;
 	b32 *back =(b32 *)KEYBACK;
 	b32 addr=add(*front);
 	if(addr == (*back))
 		return 0;
 	else{
-		b8 *temp=(b8 *)*front;
+		b8 *temp=(b8 *)addr;
 		*key=*temp;
 		*front=addr;
 		return 1;
 	}
-	asm volatile(
+/*	asm volatile(
 			"sti \n\t"
 			:::
-			); 
+			); */
 }

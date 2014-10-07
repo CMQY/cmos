@@ -4,6 +4,7 @@ global systemcall
 systemcall:
 		push ebp
 		mov ebp,esp
+		push dword [ebp+0x14]
 		push dword [ebp+0x10]
 		push dword [ebp+0xc]
 		push dword [ebp+0x08]
